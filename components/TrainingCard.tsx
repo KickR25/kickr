@@ -31,7 +31,7 @@ export default function TrainingCard({ training, currentUserId, onLike, onSave, 
               <Text style={styles.badgeText}>{training.teamCategory}</Text>
             </View>
             {training.gender && (
-              <View style={[styles.badge, { backgroundColor: colors.secondary }]}>
+              <View style={[styles.badge, styles.badgeSecondary]}>
                 <Text style={styles.badgeText}>{training.gender}</Text>
               </View>
             )}
@@ -56,7 +56,7 @@ export default function TrainingCard({ training, currentUserId, onLike, onSave, 
             ios_icon_name="clock"
             android_material_icon_name="schedule"
             size={16}
-            color={colors.textSecondary}
+            color={colors.primary}
           />
           <Text style={styles.detailText}>{training.duration}</Text>
         </View>
@@ -65,7 +65,7 @@ export default function TrainingCard({ training, currentUserId, onLike, onSave, 
             ios_icon_name="person.2"
             android_material_icon_name="group"
             size={16}
-            color={colors.textSecondary}
+            color={colors.primary}
           />
           <Text style={styles.detailText}>{training.playerCount}</Text>
         </View>
@@ -80,9 +80,11 @@ export default function TrainingCard({ training, currentUserId, onLike, onSave, 
             ios_icon_name={isLiked ? 'heart.fill' : 'heart'}
             android_material_icon_name={isLiked ? 'favorite' : 'favorite_border'}
             size={22}
-            color={isLiked ? colors.error : colors.textSecondary}
+            color={isLiked ? colors.secondary : colors.textSecondary}
           />
-          <Text style={styles.actionText}>{training.likes.length}</Text>
+          <Text style={[styles.actionText, isLiked && { color: colors.secondary, fontWeight: '700' }]}>
+            {training.likes.length}
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.actionButton}>
@@ -105,7 +107,9 @@ export default function TrainingCard({ training, currentUserId, onLike, onSave, 
             size={22}
             color={isSaved ? colors.primary : colors.textSecondary}
           />
-          <Text style={styles.actionText}>Speichern</Text>
+          <Text style={[styles.actionText, isSaved && { color: colors.primary, fontWeight: '700' }]}>
+            Speichern
+          </Text>
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
@@ -115,11 +119,11 @@ export default function TrainingCard({ training, currentUserId, onLike, onSave, 
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.white,
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     marginBottom: 12,
-    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
-    elevation: 2,
+    boxShadow: '0px 2px 12px rgba(0, 0, 0, 0.08)',
+    elevation: 3,
   },
   header: {
     flexDirection: 'row',
@@ -131,6 +135,8 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 24,
     marginRight: 12,
+    borderWidth: 2,
+    borderColor: colors.borderLight,
   },
   headerInfo: {
     flex: 1,
@@ -139,7 +145,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: colors.text,
-    marginBottom: 4,
+    marginBottom: 6,
   },
   badges: {
     flexDirection: 'row',
@@ -147,45 +153,56 @@ const styles = StyleSheet.create({
   },
   badge: {
     backgroundColor: colors.primary,
-    paddingVertical: 3,
-    paddingHorizontal: 8,
-    borderRadius: 12,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 14,
+  },
+  badgeSecondary: {
+    backgroundColor: colors.accent,
   },
   badgeText: {
     color: colors.white,
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
   title: {
     fontSize: 18,
     fontWeight: '700',
     color: colors.text,
-    marginBottom: 4,
+    marginBottom: 6,
+    letterSpacing: -0.2,
   },
   goal: {
     fontSize: 14,
     color: colors.textSecondary,
     marginBottom: 12,
+    fontWeight: '500',
   },
   trainingImage: {
     width: '100%',
     height: 200,
-    borderRadius: 8,
+    borderRadius: 12,
     marginBottom: 12,
   },
   details: {
     flexDirection: 'row',
-    gap: 16,
+    gap: 20,
     marginBottom: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: colors.card,
+    borderRadius: 10,
   },
   detailItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
   },
   detailText: {
-    fontSize: 13,
-    color: colors.textSecondary,
+    fontSize: 14,
+    color: colors.text,
+    fontWeight: '600',
   },
   actions: {
     flexDirection: 'row',
@@ -198,6 +215,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
   },
   actionText: {
     fontSize: 14,

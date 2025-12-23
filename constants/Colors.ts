@@ -1,5 +1,8 @@
-const tintColorLight = "#0a7ea4";
-const tintColorDark = "#fff";
+
+import { colors } from '@/styles/commonStyles';
+
+const tintColorLight = colors.primary; // KickR brand green
+const tintColorDark = colors.primaryLight; // Lighter green for dark mode
 
 export const zincColors = {
   50: "#fafafa",
@@ -15,31 +18,92 @@ export const zincColors = {
   950: "#09090b",
 };
 
-export const appleBlue = "#007AFF";
-export const appleRed = "#FF3B30";
+// KickR Brand Colors
+export const appleBlue = colors.accent; // Purple accent
+export const appleRed = colors.secondary; // Orange accent
+export const appleGreen = colors.primary; // Brand green
 
-export const borderColor = "#A1A1AA80";
-export const appleGreen = "#34C759";
+export const borderColor = colors.border;
+
 export const Colors = {
   light: {
-    text: "#11181C",
-    background: "#fff",
+    text: colors.text,
+    background: colors.background,
     tint: tintColorLight,
-    icon: "#687076",
-    tabIconDefault: "#687076",
+    icon: colors.textSecondary,
+    tabIconDefault: colors.textSecondary,
     tabIconSelected: tintColorLight,
+    primary: colors.primary,
+    secondary: colors.secondary,
+    accent: colors.accent,
+    card: colors.card,
+    border: colors.border,
   },
   dark: {
-    text: "#ECEDEE",
-    background: "#151718",
+    text: colors.darkText,
+    background: colors.darkBackground,
     tint: tintColorDark,
-    icon: "#9BA1A6",
-    tabIconDefault: "#9BA1A6",
+    icon: colors.darkTextSecondary,
+    tabIconDefault: colors.darkTextSecondary,
     tabIconSelected: tintColorDark,
+    primary: colors.primary,
+    secondary: colors.secondary,
+    accent: colors.accent,
+    card: colors.darkCard,
+    border: colors.darkBorder,
   },
 };
 
 export const backgroundColors = [
+  // KickR Brand Greens
+  "#E6FAF0",
+  "#CCF5E1",
+  "#99EBC3",
+  "#66E1A5",
+  "#33D787",
+  "#00D95F", // Primary brand green
+  "#00B84F",
+  "#00973F",
+  "#00762F",
+  "#00551F",
+
+  // Complementary Oranges
+  "#FFF4ED",
+  "#FFE9DB",
+  "#FFD3B7",
+  "#FFBD93",
+  "#FFA76F",
+  "#FF6B35", // Secondary brand orange
+  "#E85A2A",
+  "#D1491F",
+  "#BA3814",
+  "#A32709",
+
+  // Accent Purples
+  "#F5F3FF",
+  "#EDE9FE",
+  "#DDD6FE",
+  "#C4B5FD",
+  "#A78BFA",
+  "#6C5CE7", // Accent purple
+  "#5B4CD3",
+  "#4A3DBF",
+  "#392EAB",
+  "#281F97",
+
+  // Neutral Grays
+  "#FAFAFA",
+  "#F5F5F5",
+  "#E5E5E5",
+  "#D4D4D4",
+  "#A3A3A3",
+  "#737373",
+  "#525252",
+  "#404040",
+  "#262626",
+  "#171717",
+
+  // Additional complementary colors
   "#fef2f2",
   "#fee2e2",
   "#fecaca",
@@ -161,28 +225,6 @@ export const backgroundColors = [
   "#3730a3",
   "#312e81",
 
-  "#f5f3ff",
-  "#ede9fe",
-  "#ddd6fe",
-  "#c4b5fd",
-  "#a78bfa",
-  "#8b5cf6",
-  "#7c3aed",
-  "#6d28d9",
-  "#5b21b6",
-  "#4c1d95",
-
-  "#faf5ff",
-  "#f3e8ff",
-  "#e9d5ff",
-  "#d8b4fe",
-  "#c084fc",
-  "#a855f7",
-  "#9333ea",
-  "#7e22ce",
-  "#6b21a8",
-  "#581c87",
-
   "#fdf4ff",
   "#fae8ff",
   "#f5d0fe",
@@ -218,6 +260,26 @@ export const backgroundColors = [
 ];
 
 export const emojies = [
+  // Sports & Football
+  "⚽",
+  "🥅",
+  "🏆",
+  "🥇",
+  "🥈",
+  "🥉",
+  "🏅",
+  "🎖️",
+  "🏃‍♂️",
+  "🏃‍♀️",
+  "🤾‍♂️",
+  "🤾‍♀️",
+  "⛹️‍♂️",
+  "⛹️‍♀️",
+  "🤸‍♂️",
+  "🤸‍♀️",
+  "🧘‍♂️",
+  "🧘‍♀️",
+
   // Fruits
   "🍏",
   "🍎",

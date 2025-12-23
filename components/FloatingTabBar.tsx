@@ -21,6 +21,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Href } from 'expo-router';
+import { colors } from '@/styles/commonStyles';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -116,26 +117,26 @@ export default function FloatingTabBar({
     };
   });
 
-  // Dynamic styles based on theme
+  // Dynamic styles based on theme with KickR brand colors
   const dynamicStyles = {
     blurContainer: {
       ...styles.blurContainer,
       borderWidth: 1.5,
-      borderColor: theme.dark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.08)',
+      borderColor: theme.dark ? 'rgba(0, 217, 95, 0.2)' : 'rgba(0, 217, 95, 0.15)',
       ...Platform.select({
         ios: {
           backgroundColor: theme.dark
-            ? 'rgba(28, 28, 30, 0.85)'
+            ? 'rgba(15, 23, 42, 0.85)'
             : 'rgba(255, 255, 255, 0.75)',
         },
         android: {
           backgroundColor: theme.dark
-            ? 'rgba(28, 28, 30, 0.95)'
+            ? 'rgba(15, 23, 42, 0.95)'
             : 'rgba(255, 255, 255, 0.95)',
         },
         web: {
           backgroundColor: theme.dark
-            ? 'rgba(28, 28, 30, 0.95)'
+            ? 'rgba(15, 23, 42, 0.95)'
             : 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(10px)',
         },
@@ -147,8 +148,8 @@ export default function FloatingTabBar({
     indicator: {
       ...styles.indicator,
       backgroundColor: theme.dark
-        ? 'rgba(255, 255, 255, 0.1)' // Subtle white overlay in dark mode
-        : 'rgba(46, 204, 113, 0.12)', // Subtle green overlay in light mode
+        ? 'rgba(0, 217, 95, 0.15)' // Subtle green overlay in dark mode
+        : 'rgba(0, 217, 95, 0.12)', // Subtle green overlay in light mode
       width: `${tabWidthPercent}%` as `${number}%`, // Dynamic width based on number of tabs
     },
   };
@@ -184,13 +185,13 @@ export default function FloatingTabBar({
                       android_material_icon_name={tab.icon}
                       ios_icon_name={tab.icon}
                       size={26}
-                      color={isActive ? theme.colors.primary : (theme.dark ? '#98989D' : '#666666')}
+                      color={isActive ? colors.primary : (theme.dark ? colors.darkTextSecondary : colors.textSecondary)}
                     />
                     <Text
                       style={[
                         styles.tabLabel,
-                        { color: theme.dark ? '#98989D' : '#666666' },
-                        isActive && { color: theme.colors.primary, fontWeight: '700' },
+                        { color: theme.dark ? colors.darkTextSecondary : colors.textSecondary },
+                        isActive && { color: colors.primary, fontWeight: '700' },
                       ]}
                     >
                       {tab.label}

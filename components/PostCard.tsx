@@ -150,9 +150,9 @@ export default function PostCard({ post, onLike, onComment, onShare, onRepost }:
             ios_icon_name={isLiked ? 'heart.fill' : 'heart'}
             android_material_icon_name={isLiked ? 'favorite' : 'favorite_border'}
             size={22}
-            color={isLiked ? colors.error : colors.textSecondary}
+            color={isLiked ? colors.secondary : colors.textSecondary}
           />
-          <Text style={[styles.actionText, isLiked && { color: colors.error }]}>Like</Text>
+          <Text style={[styles.actionText, isLiked && { color: colors.secondary, fontWeight: '700' }]}>Like</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -163,9 +163,9 @@ export default function PostCard({ post, onLike, onComment, onShare, onRepost }:
             ios_icon_name="bubble.left"
             android_material_icon_name="comment"
             size={22}
-            color={colors.textSecondary}
+            color={showComments ? colors.primary : colors.textSecondary}
           />
-          <Text style={styles.actionText}>Kommentar</Text>
+          <Text style={[styles.actionText, showComments && { color: colors.primary, fontWeight: '700' }]}>Kommentar</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -205,12 +205,12 @@ export default function PostCard({ post, onLike, onComment, onShare, onRepost }:
               value={commentText}
               onChangeText={setCommentText}
             />
-            <TouchableOpacity onPress={handleComment}>
+            <TouchableOpacity onPress={handleComment} disabled={!commentText.trim()}>
               <IconSymbol
                 ios_icon_name="paperplane.fill"
                 android_material_icon_name="send"
                 size={24}
-                color={colors.primary}
+                color={commentText.trim() ? colors.primary : colors.mediumGray}
               />
             </TouchableOpacity>
           </View>
@@ -223,11 +223,11 @@ export default function PostCard({ post, onLike, onComment, onShare, onRepost }:
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.white,
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     marginBottom: 12,
-    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
-    elevation: 2,
+    boxShadow: '0px 2px 12px rgba(0, 0, 0, 0.08)',
+    elevation: 3,
   },
   header: {
     flexDirection: 'row',
@@ -239,6 +239,8 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 24,
     marginRight: 12,
+    borderWidth: 2,
+    borderColor: colors.borderLight,
   },
   headerInfo: {
     flex: 1,
@@ -262,13 +264,13 @@ const styles = StyleSheet.create({
   postImage: {
     width: '100%',
     height: 250,
-    borderRadius: 8,
+    borderRadius: 12,
     marginBottom: 12,
   },
   stats: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderTopWidth: 1,
     borderTopColor: colors.border,
     borderBottomWidth: 1,
@@ -278,6 +280,7 @@ const styles = StyleSheet.create({
   statsText: {
     fontSize: 13,
     color: colors.textSecondary,
+    fontWeight: '600',
   },
   actions: {
     flexDirection: 'row',
@@ -288,6 +291,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
   },
   actionText: {
     fontSize: 14,
@@ -309,22 +314,25 @@ const styles = StyleSheet.create({
     height: 32,
     borderRadius: 16,
     marginRight: 8,
+    borderWidth: 1.5,
+    borderColor: colors.borderLight,
   },
   commentContent: {
     flex: 1,
     backgroundColor: colors.card,
-    borderRadius: 8,
-    padding: 8,
+    borderRadius: 12,
+    padding: 10,
   },
   commentUserName: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
     color: colors.text,
     marginBottom: 2,
   },
   commentText: {
     fontSize: 14,
     color: colors.text,
+    lineHeight: 20,
   },
   commentInput: {
     flexDirection: 'row',
@@ -335,10 +343,12 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     backgroundColor: colors.card,
-    borderRadius: 20,
-    paddingVertical: 8,
+    borderRadius: 24,
+    paddingVertical: 10,
     paddingHorizontal: 16,
     fontSize: 14,
     color: colors.text,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
   },
 });
