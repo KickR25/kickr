@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User, Post, Training } from '@/types';
+import { supabase } from '@/app/integrations/supabase/client';
 
 interface AuthContextType {
   user: User | null;
@@ -45,9 +46,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loadCurrentUser = async () => {
     try {
-      const userJson = await AsyncStorage.getItem(STORAGE_KEYS.CURRENT_USER);
-      if (userJson) {
-        setUser(JSON.parse(userJson));
+      // Check Supabase session first
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session?.user) {
+        // Load profile from Supabase
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+
+        if (profile) {
+          const loadedUser: User = {
+            id: profile.id,
+            name: profile.name,
+            email: profile.email,
+            role: profile.role,
+            avatar: profile.avatar,
+            coverImage: profile.cover_image,
+            bio: profile.bio,
+            location: profile.location,
+            friends: [],
+            friendRequests: [],
+            adminLevel: profile.admin_level,
+          };
+          setUser(loadedUser);
+          await AsyncStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(loadedUser));
+        }
+      } else {
+        // Fallback to local storage
+        const userJson = await AsyncStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+        if (userJson) {
+          setUser(JSON.parse(userJson));
+        }
       }
     } catch (error) {
       console.error('Error loading user:', error);
@@ -118,58 +150,147 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      const usersJson = await AsyncStorage.getItem(STORAGE_KEYS.USERS);
-      const users: User[] = usersJson ? JSON.parse(usersJson) : [];
-      
-      const foundUser = users.find(u => u.email === email && u.password === password);
-      
-      if (foundUser) {
-        await AsyncStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(foundUser));
-        setUser(foundUser);
-        return { success: true };
-      } else {
-        return { success: false, error: 'Ungültige E-Mail oder Passwort' };
+      // Try Supabase login first
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        console.error('Supabase login error:', error);
+        // Fallback to local storage
+        const usersJson = await AsyncStorage.getItem(STORAGE_KEYS.USERS);
+        const users: User[] = usersJson ? JSON.parse(usersJson) : [];
+        
+        const foundUser = users.find(u => u.email === email && u.password === password);
+        
+        if (foundUser) {
+          await AsyncStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(foundUser));
+          setUser(foundUser);
+          return { success: true };
+        } else {
+          return { success: false, error: error.message || 'Ungültige E-Mail oder Passwort' };
+        }
       }
-    } catch (error) {
+
+      if (data.user) {
+        // Load profile
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', data.user.id)
+          .single();
+
+        if (profile) {
+          const loggedInUser: User = {
+            id: profile.id,
+            name: profile.name,
+            email: profile.email,
+            role: profile.role,
+            avatar: profile.avatar,
+            coverImage: profile.cover_image,
+            bio: profile.bio,
+            location: profile.location,
+            friends: [],
+            friendRequests: [],
+            adminLevel: profile.admin_level,
+          };
+          setUser(loggedInUser);
+          await AsyncStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(loggedInUser));
+          return { success: true };
+        }
+      }
+
+      return { success: false, error: 'Profil nicht gefunden' };
+    } catch (error: any) {
       console.error('Login error:', error);
-      return { success: false, error: 'Ein Fehler ist aufgetreten' };
+      return { success: false, error: error.message || 'Ein Fehler ist aufgetreten' };
     }
   };
 
   const register = async (name: string, email: string, password: string, role: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      const usersJson = await AsyncStorage.getItem(STORAGE_KEYS.USERS);
-      const users: User[] = usersJson ? JSON.parse(usersJson) : [];
-      
-      // Check if email already exists
-      if (users.find(u => u.email === email)) {
-        return { success: false, error: 'E-Mail bereits registriert' };
-      }
-
-      const newUser: User = {
-        id: Date.now().toString(),
-        name,
+      // Try Supabase registration first
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        role: role as any,
-        friends: [],
-        friendRequests: [],
-      };
+        options: {
+          emailRedirectTo: 'https://natively.dev/email-confirmed',
+          data: {
+            name,
+            role,
+          },
+        },
+      });
 
-      users.push(newUser);
-      await AsyncStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
-      await AsyncStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(newUser));
-      setUser(newUser);
-      
-      return { success: true };
-    } catch (error) {
+      if (error) {
+        console.error('Supabase registration error:', error);
+        // Fallback to local storage
+        const usersJson = await AsyncStorage.getItem(STORAGE_KEYS.USERS);
+        const users: User[] = usersJson ? JSON.parse(usersJson) : [];
+        
+        if (users.find(u => u.email === email)) {
+          return { success: false, error: 'E-Mail bereits registriert' };
+        }
+
+        const newUser: User = {
+          id: Date.now().toString(),
+          name,
+          email,
+          password,
+          role: role as any,
+          friends: [],
+          friendRequests: [],
+        };
+
+        users.push(newUser);
+        await AsyncStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+        await AsyncStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(newUser));
+        setUser(newUser);
+        
+        return { success: true };
+      }
+
+      if (data.user) {
+        // Create profile in Supabase
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: data.user.id,
+            name,
+            email,
+            role,
+          });
+
+        if (profileError) {
+          console.error('Profile creation error:', profileError);
+        }
+
+        const newUser: User = {
+          id: data.user.id,
+          name,
+          email,
+          role: role as any,
+          friends: [],
+          friendRequests: [],
+        };
+
+        setUser(newUser);
+        await AsyncStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(newUser));
+        
+        return { success: true };
+      }
+
+      return { success: false, error: 'Registrierung fehlgeschlagen' };
+    } catch (error: any) {
       console.error('Registration error:', error);
-      return { success: false, error: 'Ein Fehler ist aufgetreten' };
+      return { success: false, error: error.message || 'Ein Fehler ist aufgetreten' };
     }
   };
 
   const logout = async () => {
     try {
+      await supabase.auth.signOut();
       await AsyncStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
       setUser(null);
     } catch (error) {

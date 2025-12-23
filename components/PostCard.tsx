@@ -5,6 +5,7 @@ import { Post } from '@/types';
 import { colors, commonStyles } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
 import { useAuth } from '@/contexts/AuthContext';
+import { useBanCheck } from '@/hooks/useBanCheck';
 
 interface PostCardProps {
   post: Post;
@@ -16,6 +17,7 @@ interface PostCardProps {
 
 export default function PostCard({ post, onLike, onComment, onShare, onRepost }: PostCardProps) {
   const { user } = useAuth();
+  const { hasCommentBan, getCommentBan, formatRemainingTime } = useBanCheck();
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
 
@@ -26,6 +28,21 @@ export default function PostCard({ post, onLike, onComment, onShare, onRepost }:
   const isLiked = post.likes.includes(user.id);
 
   const handleComment = () => {
+    if (hasCommentBan) {
+      const ban = getCommentBan();
+      if (ban) {
+        const timeText = ban.isPermanent
+          ? 'dauerhaft gesperrt'
+          : `bis ${ban.endsAt?.toLocaleString('de-DE')} gesperrt`;
+        Alert.alert(
+          'Kommentieren nicht möglich',
+          `Du bist ${timeText}.\n\nGrund: ${ban.reason}`,
+          [{ text: 'OK' }]
+        );
+      }
+      return;
+    }
+
     if (commentText.trim()) {
       onComment(post.id, commentText);
       setCommentText('');

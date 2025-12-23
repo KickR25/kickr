@@ -5,9 +5,11 @@ import { router } from 'expo-router';
 import { colors } from '@/styles/commonStyles';
 import { useAuth } from '@/contexts/AuthContext';
 import { IconSymbol } from '@/components/IconSymbol';
+import { useAdmin } from '@/hooks/useAdmin';
 
 export default function ProfileScreen() {
   const { user, logout, posts, trainings } = useAuth();
+  const { isAdmin, adminLevel } = useAdmin();
 
   if (!user) {
     return (
@@ -143,6 +145,33 @@ export default function ProfileScreen() {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Einstellungen</Text>
+          
+          {isAdmin && (
+            <TouchableOpacity
+              style={[styles.menuItem, styles.adminItem]}
+              onPress={() => router.push('/(admin)')}
+            >
+              <IconSymbol
+                ios_icon_name="shield.fill"
+                android_material_icon_name="shield"
+                size={24}
+                color={colors.primary}
+              />
+              <View style={styles.adminTextContainer}>
+                <Text style={[styles.menuItemText, styles.adminText]}>Admin-Bereich</Text>
+                {adminLevel && (
+                  <Text style={styles.adminLevelText}>{adminLevel}</Text>
+                )}
+              </View>
+              <IconSymbol
+                ios_icon_name="chevron.right"
+                android_material_icon_name="chevron_right"
+                size={24}
+                color={colors.primary}
+              />
+            </TouchableOpacity>
+          )}
+          
           <TouchableOpacity style={styles.menuItem}>
             <IconSymbol
               ios_icon_name="bell"
@@ -364,5 +393,22 @@ const styles = StyleSheet.create({
     color: colors.error,
     textAlign: 'center',
     marginTop: 40,
+  },
+  adminItem: {
+    borderWidth: 2,
+    borderColor: colors.primary,
+    backgroundColor: `${colors.primary}10`,
+  },
+  adminTextContainer: {
+    flex: 1,
+  },
+  adminText: {
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  adminLevelText: {
+    fontSize: 12,
+    color: colors.primary,
+    marginTop: 2,
   },
 });

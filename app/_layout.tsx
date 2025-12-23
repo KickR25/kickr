@@ -6,7 +6,7 @@ import { Stack, router } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { SystemBars } from "react-native-edge-to-edge";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { useColorScheme, Alert } from "react-native";
+import { useColorScheme, Alert, View } from "react-native";
 import { useNetworkState } from "expo-network";
 import {
   DarkTheme,
@@ -17,6 +17,8 @@ import {
 import { StatusBar } from "expo-status-bar";
 import { WidgetProvider } from "@/contexts/WidgetContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { useBanCheck } from "@/hooks/useBanCheck";
+import BanScreen from "@/components/BanScreen";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -29,6 +31,7 @@ function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const networkState = useNetworkState();
   const { isAuthenticated, isLoading } = useAuth();
+  const { isChecking, hasFullBan, getFullBan } = useBanCheck();
 
   React.useEffect(() => {
     if (
@@ -43,14 +46,24 @@ function RootLayoutNav() {
   }, [networkState.isConnected, networkState.isInternetReachable]);
 
   React.useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && !isChecking) {
       if (isAuthenticated) {
-        router.replace('/(tabs)');
+        if (!hasFullBan) {
+          router.replace('/(tabs)');
+        }
       } else {
         router.replace('/(auth)/welcome');
       }
     }
-  }, [isAuthenticated, isLoading]);
+  }, [isAuthenticated, isLoading, isChecking, hasFullBan]);
+
+  // Show ban screen if user has full ban
+  if (isAuthenticated && hasFullBan) {
+    const ban = getFullBan();
+    if (ban) {
+      return <BanScreen ban={ban} />;
+    }
+  }
 
   const CustomDefaultTheme: Theme = {
     ...DefaultTheme,
@@ -84,6 +97,7 @@ function RootLayoutNav() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="(admin)" />
         <Stack.Screen
           name="modal"
           options={{

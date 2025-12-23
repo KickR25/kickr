@@ -1,6 +1,14 @@
 
 export type UserRole = 'admin' | 'trainer' | 'club' | 'sponsor';
 
+export type AdminLevel = 'ADMIN_1' | 'ADMIN_2' | 'ADMIN_3' | 'ADMIN_4';
+
+export type SanctionType = 'MESSAGE_BAN' | 'COMMENT_BAN' | 'FULL_BAN';
+
+export type SanctionStatus = 'ACTIVE' | 'REVOKED' | 'EXPIRED';
+
+export type ActionType = 'sanction_created' | 'sanction_revoked' | 'admin_promoted' | 'admin_demoted' | 'admin_removed';
+
 export type TeamCategory = 
   | 'G-Jugend'
   | 'F-Jugend'
@@ -32,6 +40,43 @@ export interface User {
   location?: string;
   friends: string[];
   friendRequests: string[];
+  adminLevel?: AdminLevel;
+}
+
+export interface Sanction {
+  id: string;
+  userId: string;
+  type: SanctionType;
+  reason: string;
+  createdByAdmin: string;
+  createdByAdminName?: string;
+  createdAt: Date;
+  isPermanent: boolean;
+  endsAt?: Date;
+  status: SanctionStatus;
+  revokedAt?: Date;
+  revokedByAdmin?: string;
+}
+
+export interface AdminChatMessage {
+  id: string;
+  adminId: string;
+  adminName?: string;
+  adminAvatar?: string;
+  content: string;
+  imageUrl?: string;
+  createdAt: Date;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  actorAdminId: string;
+  actorAdminName?: string;
+  targetUserId?: string;
+  targetUserName?: string;
+  actionType: ActionType;
+  details?: any;
+  timestamp: Date;
 }
 
 export interface Post {
