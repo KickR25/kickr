@@ -20,8 +20,28 @@ export default function AdminDashboard() {
   if (!isAdmin) {
     return (
       <View style={[styles.container, styles.centerContent]}>
+        <IconSymbol
+          ios_icon_name="lock.shield.fill"
+          android_material_icon_name="admin_panel_settings"
+          size={64}
+          color={colors.textSecondary}
+        />
         <Text style={styles.errorText}>Kein Zugriff</Text>
         <Text style={styles.errorSubtext}>Du hast keine Admin-Berechtigung</Text>
+        
+        <TouchableOpacity 
+          style={styles.initButton} 
+          onPress={() => router.push('/(admin)/initialize-owner')}
+        >
+          <IconSymbol
+            ios_icon_name="crown.fill"
+            android_material_icon_name="workspace_premium"
+            size={20}
+            color="#fff"
+          />
+          <Text style={styles.initButtonText}>Owner werden</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Text style={styles.backButtonText}>Zurück</Text>
         </TouchableOpacity>
@@ -78,6 +98,15 @@ export default function AdminDashboard() {
       route: '/(admin)/audit-log',
       available: true,
     },
+    {
+      title: 'Owner Setup',
+      description: 'Admin 4 initialisieren',
+      icon: 'crown.fill',
+      androidIcon: 'workspace_premium',
+      route: '/(admin)/initialize-owner',
+      available: true,
+      highlight: true,
+    },
   ];
 
   return (
@@ -93,7 +122,7 @@ export default function AdminDashboard() {
         </TouchableOpacity>
         <View>
           <Text style={styles.headerTitle}>Admin-Bereich</Text>
-          <Text style={styles.headerSubtitle}>Level: {adminLevel}</Text>
+          <Text style={styles.headerSubtitle}>Level: {adminLevel || 'Kein Admin'}</Text>
         </View>
       </View>
 
@@ -102,15 +131,15 @@ export default function AdminDashboard() {
           {menuItems.filter(item => item.available).map((item, index) => (
             <TouchableOpacity
               key={index}
-              style={styles.menuCard}
+              style={[styles.menuCard, item.highlight && styles.highlightCard]}
               onPress={() => router.push(item.route as any)}
             >
-              <View style={styles.iconContainer}>
+              <View style={[styles.iconContainer, item.highlight && styles.highlightIconContainer]}>
                 <IconSymbol
                   ios_icon_name={item.icon}
                   android_material_icon_name={item.androidIcon}
                   size={32}
-                  color={colors.primary}
+                  color={item.highlight ? '#FFD700' : colors.primary}
                 />
               </View>
               <Text style={styles.menuTitle}>{item.title}</Text>
@@ -132,6 +161,7 @@ const styles = StyleSheet.create({
   centerContent: {
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 20,
   },
   header: {
     flexDirection: 'row',
@@ -178,6 +208,10 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+  highlightCard: {
+    borderWidth: 2,
+    borderColor: '#FFD700',
+  },
   iconContainer: {
     width: 56,
     height: 56,
@@ -186,6 +220,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
+  },
+  highlightIconContainer: {
+    backgroundColor: '#FFD70020',
   },
   menuTitle: {
     fontSize: 16,
@@ -206,11 +243,28 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#FF3B30',
     marginBottom: 8,
+    marginTop: 16,
   },
   errorSubtext: {
     fontSize: 16,
     color: colors.textSecondary,
     marginBottom: 24,
+    textAlign: 'center',
+  },
+  initButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#FFD700',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  initButtonText: {
+    color: '#000',
+    fontSize: 16,
+    fontWeight: '600',
   },
   backButton: {
     backgroundColor: colors.primary,
