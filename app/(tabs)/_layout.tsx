@@ -45,7 +45,7 @@ export default function TabLayout() {
         <Stack.Screen key="sponsors" name="sponsors" />
         <Stack.Screen key="profile" name="profile" />
       </Stack>
-      <FloatingTabBar tabs={tabs} containerWidth={360} />
+      <FloatingTabBar tabs={tabs} containerWidth={380} bottomMargin={16} />
     </>
   );
 }
