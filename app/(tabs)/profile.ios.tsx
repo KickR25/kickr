@@ -1,75 +1,333 @@
-import React from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { IconSymbol } from "@/components/IconSymbol";
-import { GlassView } from "expo-glass-effect";
-import { useTheme } from "@react-navigation/native";
+
+import React from 'react';
+import { View, Text, ScrollView, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { colors } from '@/styles/commonStyles';
+import { currentUser, mockUsers } from '@/data/mockData';
+import { IconSymbol } from '@/components/IconSymbol';
 
 export default function ProfileScreen() {
-  const theme = useTheme();
+  const getRoleLabel = (role: string) => {
+    switch (role) {
+      case 'trainer':
+        return 'Trainer';
+      case 'club':
+        return 'Verein';
+      case 'sponsor':
+        return 'Sponsor';
+      case 'admin':
+        return 'Administrator';
+      default:
+        return role;
+    }
+  };
+
+  const friends = mockUsers.filter(user => currentUser.friends.includes(user.id));
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]} edges={['top']}>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.contentContainer}
-      >
-        <GlassView style={styles.profileHeader} glassEffectStyle="regular">
-          <IconSymbol ios_icon_name="person.circle.fill" android_material_icon_name="person" size={24} color={theme.colors.primary} />
-          <Text style={[styles.name, { color: theme.colors.text }]}>John Doe</Text>
-          <Text style={[styles.email, { color: theme.dark ? '#98989D' : '#666' }]}>john.doe@example.com</Text>
-        </GlassView>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Profil</Text>
+      </View>
 
-        <GlassView style={styles.section} glassEffectStyle="regular">
-          <View style={styles.infoRow}>
-            <IconSymbol ios_icon_name="phone.fill" android_material_icon_name="phone" size={24} color={theme.dark ? '#98989D' : '#666'} />
-            <Text style={[styles.infoText, { color: theme.colors.text }]}>+1 (555) 123-4567</Text>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.profileCard}>
+          <Image
+            source={{ uri: currentUser.avatar }}
+            style={styles.avatar}
+          />
+          <Text style={styles.name}>{currentUser.name}</Text>
+          <View style={styles.roleBadge}>
+            <Text style={styles.roleText}>{getRoleLabel(currentUser.role)}</Text>
           </View>
-          <View style={styles.infoRow}>
-            <IconSymbol ios_icon_name="location.fill" android_material_icon_name="location-on" size={24} color={theme.dark ? '#98989D' : '#666'} />
-            <Text style={[styles.infoText, { color: theme.colors.text }]}>San Francisco, CA</Text>
+          {currentUser.bio && (
+            <Text style={styles.bio}>{currentUser.bio}</Text>
+          )}
+          {currentUser.location && (
+            <View style={styles.locationRow}>
+              <IconSymbol
+                ios_icon_name="location"
+                android_material_icon_name="location_on"
+                size={16}
+                color={colors.textSecondary}
+              />
+              <Text style={styles.location}>{currentUser.location}</Text>
+            </View>
+          )}
+
+          <View style={styles.stats}>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{currentUser.friends.length}</Text>
+              <Text style={styles.statLabel}>Freunde</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>12</Text>
+              <Text style={styles.statLabel}>Beiträge</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>5</Text>
+              <Text style={styles.statLabel}>Trainings</Text>
+            </View>
           </View>
-        </GlassView>
+
+          <TouchableOpacity style={styles.editButton}>
+            <IconSymbol
+              ios_icon_name="pencil"
+              android_material_icon_name="edit"
+              size={20}
+              color={colors.white}
+            />
+            <Text style={styles.editButtonText}>Profil bearbeiten</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Freunde ({friends.length})</Text>
+          {friends.map((friend) => (
+            <View key={friend.id} style={styles.friendCard}>
+              <Image
+                source={{ uri: friend.avatar }}
+                style={styles.friendAvatar}
+              />
+              <View style={styles.friendInfo}>
+                <Text style={styles.friendName}>{friend.name}</Text>
+                <Text style={styles.friendRole}>{getRoleLabel(friend.role)}</Text>
+              </View>
+              <TouchableOpacity>
+                <IconSymbol
+                  ios_icon_name="chevron.right"
+                  android_material_icon_name="chevron_right"
+                  size={24}
+                  color={colors.textSecondary}
+                />
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Einstellungen</Text>
+          <TouchableOpacity style={styles.menuItem}>
+            <IconSymbol
+              ios_icon_name="bell"
+              android_material_icon_name="notifications"
+              size={24}
+              color={colors.text}
+            />
+            <Text style={styles.menuItemText}>Benachrichtigungen</Text>
+            <IconSymbol
+              ios_icon_name="chevron.right"
+              android_material_icon_name="chevron_right"
+              size={24}
+              color={colors.textSecondary}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem}>
+            <IconSymbol
+              ios_icon_name="lock"
+              android_material_icon_name="lock"
+              size={24}
+              color={colors.text}
+            />
+            <Text style={styles.menuItemText}>Datenschutz</Text>
+            <IconSymbol
+              ios_icon_name="chevron.right"
+              android_material_icon_name="chevron_right"
+              size={24}
+              color={colors.textSecondary}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem}>
+            <IconSymbol
+              ios_icon_name="questionmark.circle"
+              android_material_icon_name="help"
+              size={24}
+              color={colors.text}
+            />
+            <Text style={styles.menuItemText}>Hilfe & Support</Text>
+            <IconSymbol
+              ios_icon_name="chevron.right"
+              android_material_icon_name="chevron_right"
+              size={24}
+              color={colors.textSecondary}
+            />
+          </TouchableOpacity>
+        </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
   container: {
     flex: 1,
+    backgroundColor: colors.background,
   },
-  contentContainer: {
-    padding: 20,
+  header: {
+    backgroundColor: colors.primary,
+    paddingTop: 60,
+    paddingBottom: 16,
+    paddingHorizontal: 16,
   },
-  profileHeader: {
-    alignItems: 'center',
+  headerTitle: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: colors.white,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 100,
+  },
+  profileCard: {
+    backgroundColor: colors.white,
     borderRadius: 12,
-    padding: 32,
+    padding: 24,
+    alignItems: 'center',
     marginBottom: 16,
-    gap: 12,
+    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+    elevation: 2,
+  },
+  avatar: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 16,
   },
   name: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 8,
   },
-  email: {
+  roleBadge: {
+    backgroundColor: colors.primary,
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  roleText: {
+    color: colors.white,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  bio: {
+    fontSize: 15,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 16,
+  },
+  location: {
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+  stats: {
+    flexDirection: 'row',
+    width: '100%',
+    justifyContent: 'space-around',
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: colors.border,
+    marginBottom: 16,
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  statLabel: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    marginTop: 4,
+  },
+  statDivider: {
+    width: 1,
+    backgroundColor: colors.border,
+  },
+  editButton: {
+    backgroundColor: colors.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  editButtonText: {
+    color: colors.white,
     fontSize: 16,
+    fontWeight: '600',
   },
   section: {
-    borderRadius: 12,
-    padding: 20,
-    gap: 12,
+    marginBottom: 16,
   },
-  infoRow: {
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 12,
+  },
+  friendCard: {
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    padding: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+    elevation: 2,
+  },
+  friendAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: 12,
+  },
+  friendInfo: {
+    flex: 1,
+  },
+  friendName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  friendRole: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  menuItem: {
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    marginBottom: 8,
+    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+    elevation: 2,
   },
-  infoText: {
+  menuItemText: {
+    flex: 1,
     fontSize: 16,
+    color: colors.text,
   },
 });
