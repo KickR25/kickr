@@ -26,7 +26,11 @@ export default function ProfileScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Profil</Text>
+        <Image
+          source={require('@/assets/images/d332ec97-81cd-453c-a68f-f9db9a18798f.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
       </View>
 
       <ScrollView
@@ -173,11 +177,11 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 16,
     paddingHorizontal: 16,
+    alignItems: 'center',
   },
-  headerTitle: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: colors.white,
+  logo: {
+    width: 200,
+    height: 50,
   },
   scrollView: {
     flex: 1,

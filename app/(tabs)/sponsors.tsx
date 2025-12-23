@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Platform, Image } from 'react-native';
 import { colors } from '@/styles/commonStyles';
 import SponsorPackageCard from '@/components/SponsorPackageCard';
 import { mockSponsorPackages, currentUser } from '@/data/mockData';
@@ -19,7 +19,11 @@ export default function SponsorsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Sponsoring</Text>
+        <Image
+          source={require('@/assets/images/d332ec97-81cd-453c-a68f-f9db9a18798f.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
         <Text style={styles.headerSubtitle}>Finde die perfekte Partnerschaft</Text>
       </View>
 
@@ -82,11 +86,12 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'android' ? 48 : 60,
     paddingBottom: 16,
     paddingHorizontal: 16,
+    alignItems: 'center',
   },
-  headerTitle: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: colors.white,
+  logo: {
+    width: 200,
+    height: 50,
+    marginBottom: 8,
   },
   headerSubtitle: {
     fontSize: 14,

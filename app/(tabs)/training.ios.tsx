@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { colors } from '@/styles/commonStyles';
 import TrainingCard from '@/components/TrainingCard';
 import { mockTrainings, currentUser } from '@/data/mockData';
@@ -48,7 +48,11 @@ export default function TrainingScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Training Hub</Text>
+        <Image
+          source={require('@/assets/images/d332ec97-81cd-453c-a68f-f9db9a18798f.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
         <Text style={styles.headerSubtitle}>Lerne von anderen Trainern</Text>
       </View>
 
@@ -114,11 +118,12 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 16,
     paddingHorizontal: 16,
+    alignItems: 'center',
   },
-  headerTitle: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: colors.white,
+  logo: {
+    width: 200,
+    height: 50,
+    marginBottom: 8,
   },
   headerSubtitle: {
     fontSize: 14,

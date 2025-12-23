@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "GoalConnect",
-    "slug": "GoalConnect",
+    "name": "KickR",
+    "slug": "KickR",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/natively-dark.png",
@@ -44,5 +44,5 @@
       "router": {}
     }
   },
-  "scheme": "GoalConnect"
+  "scheme": "KickR"
 }

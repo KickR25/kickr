@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Platform, Image } from 'react-native';
 import { colors, commonStyles } from '@/styles/commonStyles';
 import PostCard from '@/components/PostCard';
 import { mockPosts, currentUser } from '@/data/mockData';
@@ -69,7 +69,11 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>KickR</Text>
+        <Image
+          source={require('@/assets/images/d332ec97-81cd-453c-a68f-f9db9a18798f.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
         <Text style={styles.headerSubtitle}>Dein Fußball-Netzwerk</Text>
       </View>
 
@@ -113,11 +117,12 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'android' ? 48 : 60,
     paddingBottom: 16,
     paddingHorizontal: 16,
+    alignItems: 'center',
   },
-  headerTitle: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: colors.white,
+  logo: {
+    width: 200,
+    height: 50,
+    marginBottom: 8,
   },
   headerSubtitle: {
     fontSize: 14,
