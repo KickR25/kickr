@@ -48,7 +48,7 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Image
-          source={require('@/assets/images/d332ec97-81cd-453c-a68f-f9db9a18798f.png')}
+          source={require('@/assets/images/2d45fc8c-a931-499e-a780-7671f6a326f4.png')}
           style={styles.logo}
           resizeMode="contain"
         />
@@ -147,8 +147,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logo: {
-    width: 200,
-    height: 50,
+    width: 220,
+    height: 60,
     marginBottom: 8,
   },
   headerSubtitle: {

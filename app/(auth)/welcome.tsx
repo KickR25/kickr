@@ -13,7 +13,7 @@ export default function WelcomeScreen() {
     >
       <View style={styles.content}>
         <Image
-          source={require('@/assets/images/d332ec97-81cd-453c-a68f-f9db9a18798f.png')}
+          source={require('@/assets/images/2d45fc8c-a931-499e-a780-7671f6a326f4.png')}
           style={styles.logo}
           resizeMode="contain"
         />
@@ -55,8 +55,8 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'android' ? 48 : 0,
   },
   logo: {
-    width: 250,
-    height: 80,
+    width: 300,
+    height: 120,
     marginBottom: 40,
   },
   title: {
