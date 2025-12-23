@@ -48,7 +48,7 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Image
-          source={require('@/assets/images/2d45fc8c-a931-499e-a780-7671f6a326f4.png')}
+          source={require('@/assets/images/fc351924-70fb-43a4-9d92-17162e280a0a.png')}
           style={styles.logo}
           resizeMode="contain"
         />

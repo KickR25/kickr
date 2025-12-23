@@ -5,13 +5,13 @@
     "slug": "KickR",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/2d45fc8c-a931-499e-a780-7671f6a326f4.png",
+    "icon": "./assets/images/fc351924-70fb-43a4-9d92-17162e280a0a.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/2d45fc8c-a931-499e-a780-7671f6a326f4.png",
+      "image": "./assets/images/fc351924-70fb-43a4-9d92-17162e280a0a.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#4ADE80"
     },
     "ios": {
       "supportsTablet": true,
@@ -22,14 +22,14 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/2d45fc8c-a931-499e-a780-7671f6a326f4.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/images/fc351924-70fb-43a4-9d92-17162e280a0a.png",
+        "backgroundColor": "#4ADE80"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.anonymous.Natively"
     },
     "web": {
-      "favicon": "./assets/images/2d45fc8c-a931-499e-a780-7671f6a326f4.png",
+      "favicon": "./assets/images/fc351924-70fb-43a4-9d92-17162e280a0a.png",
       "bundler": "metro"
     },
     "plugins": [
