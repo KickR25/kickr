@@ -5,11 +5,11 @@
     "slug": "KickR",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/fc351924-70fb-43a4-9d92-17162e280a0a.png",
+    "icon": "./assets/images/a782a098-0dea-4c85-9045-a026ad2ee036.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/fc351924-70fb-43a4-9d92-17162e280a0a.png",
+      "image": "./assets/images/a782a098-0dea-4c85-9045-a026ad2ee036.png",
       "resizeMode": "contain",
       "backgroundColor": "#4ADE80"
     },
@@ -22,14 +22,14 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/fc351924-70fb-43a4-9d92-17162e280a0a.png",
+        "foregroundImage": "./assets/images/a782a098-0dea-4c85-9045-a026ad2ee036.png",
         "backgroundColor": "#4ADE80"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.anonymous.Natively"
     },
     "web": {
-      "favicon": "./assets/images/fc351924-70fb-43a4-9d92-17162e280a0a.png",
+      "favicon": "./assets/images/a782a098-0dea-4c85-9045-a026ad2ee036.png",
       "bundler": "metro"
     },
     "plugins": [

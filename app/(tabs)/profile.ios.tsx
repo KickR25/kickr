@@ -57,7 +57,7 @@ export default function ProfileScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Image
-          source={require('@/assets/images/d332ec97-81cd-453c-a68f-f9db9a18798f.png')}
+          source={require('@/assets/images/a782a098-0dea-4c85-9045-a026ad2ee036.png')}
           style={styles.logo}
           resizeMode="contain"
         />

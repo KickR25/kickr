@@ -13,7 +13,7 @@ export default function WelcomeScreen() {
     >
       <View style={styles.content}>
         <Image
-          source={require('@/assets/images/2d45fc8c-a931-499e-a780-7671f6a326f4.png')}
+          source={require('@/assets/images/a782a098-0dea-4c85-9045-a026ad2ee036.png')}
           style={styles.logo}
           resizeMode="contain"
         />
