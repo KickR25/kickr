@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User, Post, Training } from '@/types';
 import { supabase } from '@/app/integrations/supabase/client';
+import { Alert } from 'react-native';
 
 interface AuthContextType {
   user: User | null;
@@ -42,7 +43,57 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loadCurrentUser();
     loadPosts();
     loadTrainings();
+    
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, session?.user?.id);
+      if (event === 'SIGNED_IN' && session?.user) {
+        await loadUserProfile(session.user.id);
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+        await AsyncStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
+
+  const loadUserProfile = async (userId: string) => {
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error loading profile:', error);
+        return;
+      }
+
+      if (profile) {
+        const loadedUser: User = {
+          id: profile.id,
+          name: profile.name,
+          email: profile.email,
+          role: profile.role,
+          avatar: profile.avatar,
+          coverImage: profile.cover_image,
+          bio: profile.bio,
+          location: profile.location,
+          friends: [],
+          friendRequests: [],
+          adminLevel: profile.admin_level,
+        };
+        setUser(loadedUser);
+        await AsyncStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(loadedUser));
+      }
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+    }
+  };
 
   const loadCurrentUser = async () => {
     try {
@@ -50,30 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (session?.user) {
-        // Load profile from Supabase
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-
-        if (profile) {
-          const loadedUser: User = {
-            id: profile.id,
-            name: profile.name,
-            email: profile.email,
-            role: profile.role,
-            avatar: profile.avatar,
-            coverImage: profile.cover_image,
-            bio: profile.bio,
-            location: profile.location,
-            friends: [],
-            friendRequests: [],
-            adminLevel: profile.admin_level,
-          };
-          setUser(loadedUser);
-          await AsyncStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(loadedUser));
-        }
+        await loadUserProfile(session.user.id);
       } else {
         // Fallback to local storage
         const userJson = await AsyncStorage.getItem(STORAGE_KEYS.CURRENT_USER);
@@ -150,7 +178,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      // Try Supabase login first
+      console.log('Attempting login for:', email);
+      
+      // Try Supabase login
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -158,50 +188,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         console.error('Supabase login error:', error);
-        // Fallback to local storage
-        const usersJson = await AsyncStorage.getItem(STORAGE_KEYS.USERS);
-        const users: User[] = usersJson ? JSON.parse(usersJson) : [];
         
-        const foundUser = users.find(u => u.email === email && u.password === password);
-        
-        if (foundUser) {
-          await AsyncStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(foundUser));
-          setUser(foundUser);
-          return { success: true };
-        } else {
-          return { success: false, error: error.message || 'Ungültige E-Mail oder Passwort' };
+        // Check if email is not confirmed
+        if (error.message.includes('Email not confirmed')) {
+          return { 
+            success: false, 
+            error: 'Bitte bestätige zuerst deine E-Mail-Adresse. Überprüfe deinen Posteingang.' 
+          };
         }
+        
+        return { success: false, error: error.message || 'Login fehlgeschlagen' };
       }
 
       if (data.user) {
-        // Load profile
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', data.user.id)
-          .single();
-
-        if (profile) {
-          const loggedInUser: User = {
-            id: profile.id,
-            name: profile.name,
-            email: profile.email,
-            role: profile.role,
-            avatar: profile.avatar,
-            coverImage: profile.cover_image,
-            bio: profile.bio,
-            location: profile.location,
-            friends: [],
-            friendRequests: [],
-            adminLevel: profile.admin_level,
-          };
-          setUser(loggedInUser);
-          await AsyncStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(loggedInUser));
-          return { success: true };
-        }
+        console.log('Login successful, loading profile...');
+        await loadUserProfile(data.user.id);
+        return { success: true };
       }
 
-      return { success: false, error: 'Profil nicht gefunden' };
+      return { success: false, error: 'Login fehlgeschlagen' };
     } catch (error: any) {
       console.error('Login error:', error);
       return { success: false, error: error.message || 'Ein Fehler ist aufgetreten' };
@@ -210,12 +215,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const register = async (name: string, email: string, password: string, role: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      // Try Supabase registration first
+      console.log('Attempting registration for:', email);
+      
+      // Try Supabase registration
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: 'https://natively.dev/email-confirmed',
           data: {
             name,
             role,
@@ -225,33 +231,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         console.error('Supabase registration error:', error);
-        // Fallback to local storage
-        const usersJson = await AsyncStorage.getItem(STORAGE_KEYS.USERS);
-        const users: User[] = usersJson ? JSON.parse(usersJson) : [];
-        
-        if (users.find(u => u.email === email)) {
-          return { success: false, error: 'E-Mail bereits registriert' };
-        }
-
-        const newUser: User = {
-          id: Date.now().toString(),
-          name,
-          email,
-          password,
-          role: role as any,
-          friends: [],
-          friendRequests: [],
-        };
-
-        users.push(newUser);
-        await AsyncStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
-        await AsyncStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(newUser));
-        setUser(newUser);
-        
-        return { success: true };
+        return { success: false, error: error.message || 'Registrierung fehlgeschlagen' };
       }
 
       if (data.user) {
+        console.log('User created in auth.users:', data.user.id);
+        
         // Create profile in Supabase
         const { error: profileError } = await supabase
           .from('profiles')
@@ -264,19 +249,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (profileError) {
           console.error('Profile creation error:', profileError);
+          // Don't fail registration if profile creation fails
+          // The user can still complete their profile later
+        } else {
+          console.log('Profile created successfully');
         }
 
-        const newUser: User = {
-          id: data.user.id,
-          name,
-          email,
-          role: role as any,
-          friends: [],
-          friendRequests: [],
-        };
-
-        setUser(newUser);
-        await AsyncStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(newUser));
+        // Check if email confirmation is required
+        if (data.session) {
+          // User is automatically logged in (email confirmation disabled)
+          console.log('User automatically logged in');
+          await loadUserProfile(data.user.id);
+        } else {
+          // Email confirmation required
+          console.log('Email confirmation required');
+          Alert.alert(
+            'Registrierung erfolgreich!',
+            'Bitte überprüfe deine E-Mail und bestätige deine Adresse, um dich anzumelden.',
+            [{ text: 'OK' }]
+          );
+        }
         
         return { success: true };
       }
@@ -304,14 +296,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const updatedUser = { ...user, ...updates };
       
-      // Update in users list
-      const usersJson = await AsyncStorage.getItem(STORAGE_KEYS.USERS);
-      const users: User[] = usersJson ? JSON.parse(usersJson) : [];
-      const userIndex = users.findIndex(u => u.id === user.id);
-      
-      if (userIndex !== -1) {
-        users[userIndex] = updatedUser;
-        await AsyncStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+      // Update in Supabase if authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            name: updatedUser.name,
+            avatar: updatedUser.avatar,
+            cover_image: updatedUser.coverImage,
+            bio: updatedUser.bio,
+            location: updatedUser.location,
+          })
+          .eq('id', user.id);
+
+        if (error) {
+          console.error('Error updating profile in Supabase:', error);
+        }
       }
       
       // Update current user
