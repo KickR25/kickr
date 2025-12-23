@@ -18,6 +18,7 @@ export default function RegisterScreen() {
   const { register } = useAuth();
 
   const handleRegister = async () => {
+    // Validation
     if (!name || !email || !password || !confirmPassword) {
       Alert.alert('Fehler', 'Bitte alle Felder ausfüllen');
       return;
@@ -33,6 +34,13 @@ export default function RegisterScreen() {
       return;
     }
 
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert('Fehler', 'Bitte gib eine gültige E-Mail-Adresse ein');
+      return;
+    }
+
     setIsLoading(true);
     const result = await register(name, email, password, role);
     setIsLoading(false);
@@ -40,13 +48,14 @@ export default function RegisterScreen() {
     if (result.success) {
       // Success - the register function already shows appropriate alerts
       // Navigate to login screen so user can log in after email confirmation
-      router.replace('/(auth)/login');
+      // Only navigate if email confirmation is required
+      // If user is auto-logged in, they'll be redirected by the auth state change
+      setTimeout(() => {
+        router.replace('/(auth)/login');
+      }, 500);
     } else if (result.error) {
-      // Only show error alert if there's an actual error
-      // (not for email sending issues, which are handled in register function)
-      if (!result.error.includes('confirmation email')) {
-        Alert.alert('Fehler', result.error);
-      }
+      // Show error alert
+      Alert.alert('Registrierung fehlgeschlagen', result.error);
     }
   };
 
@@ -72,6 +81,7 @@ export default function RegisterScreen() {
             />
           </TouchableOpacity>
           <Text style={styles.title}>Registrieren</Text>
+          <Text style={styles.subtitle}>Erstelle deinen KickR Account</Text>
         </View>
 
         <View style={styles.form}>
@@ -80,6 +90,7 @@ export default function RegisterScreen() {
             <TextInput
               style={styles.input}
               placeholder="Dein Name"
+              placeholderTextColor={colors.textSecondary}
               value={name}
               onChangeText={setName}
               autoCapitalize="words"
@@ -91,6 +102,7 @@ export default function RegisterScreen() {
             <TextInput
               style={styles.input}
               placeholder="deine@email.de"
+              placeholderTextColor={colors.textSecondary}
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
@@ -135,6 +147,7 @@ export default function RegisterScreen() {
               <TextInput
                 style={styles.passwordInput}
                 placeholder="Mindestens 6 Zeichen"
+                placeholderTextColor={colors.textSecondary}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
@@ -161,6 +174,7 @@ export default function RegisterScreen() {
               <TextInput
                 style={styles.passwordInput}
                 placeholder="Passwort wiederholen"
+                placeholderTextColor={colors.textSecondary}
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
                 secureTextEntry={!showConfirmPassword}
@@ -182,7 +196,7 @@ export default function RegisterScreen() {
           </View>
 
           <TouchableOpacity
-            style={styles.registerButton}
+            style={[styles.registerButton, isLoading && styles.registerButtonDisabled]}
             onPress={handleRegister}
             disabled={isLoading}
           >
@@ -190,6 +204,18 @@ export default function RegisterScreen() {
               {isLoading ? 'Wird registriert...' : 'Registrieren'}
             </Text>
           </TouchableOpacity>
+
+          <View style={styles.infoBox}>
+            <IconSymbol
+              ios_icon_name="info.circle"
+              android_material_icon_name="info"
+              size={20}
+              color={colors.primary}
+            />
+            <Text style={styles.infoText}>
+              Nach der Registrierung erhältst du eine Bestätigungs-E-Mail.
+            </Text>
+          </View>
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>Bereits ein Konto?</Text>
@@ -227,6 +253,11 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: '800',
     color: colors.text,
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: colors.textSecondary,
   },
   form: {
     paddingHorizontal: 16,
@@ -300,10 +331,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 12,
   },
+  registerButtonDisabled: {
+    opacity: 0.6,
+  },
   registerButtonText: {
     color: colors.white,
     fontSize: 18,
     fontWeight: '700',
+  },
+  infoBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 16,
+    gap: 8,
+  },
+  infoText: {
+    flex: 1,
+    fontSize: 14,
+    color: colors.text,
+    lineHeight: 20,
   },
   footer: {
     flexDirection: 'row',

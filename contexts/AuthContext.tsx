@@ -193,7 +193,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (error.message.includes('Email not confirmed')) {
           return { 
             success: false, 
-            error: 'Bitte bestätige zuerst deine E-Mail-Adresse. Überprüfe deinen Posteingang.' 
+            error: 'E-Mail nicht bestätigt.\n\nDeine E-Mail-Adresse muss bestätigt werden, bevor du dich anmelden kannst.\n\nBitte überprüfe deinen Posteingang (auch Spam-Ordner) und klicke auf den Bestätigungslink.\n\nFalls du keine E-Mail erhalten hast, kontaktiere bitte den Support.' 
+          };
+        }
+        
+        // Check for invalid credentials
+        if (error.message.includes('Invalid login credentials')) {
+          return { 
+            success: false, 
+            error: 'Ungültige Anmeldedaten.\n\nBitte überprüfe deine E-Mail-Adresse und dein Passwort.' 
           };
         }
         
@@ -230,9 +238,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
       });
 
-      // Check for SMTP/email sending errors - these should not block registration
+      // Handle errors
       if (error) {
         console.error('Supabase registration error:', error);
+        
+        // Check if user already exists
+        if (error.message.includes('User already registered')) {
+          return { 
+            success: false, 
+            error: 'Diese E-Mail-Adresse ist bereits registriert.\n\nBitte melde dich an oder verwende eine andere E-Mail-Adresse.' 
+          };
+        }
         
         // If it's an email sending error, we still want to proceed
         if (error.message.includes('Error sending confirmation email')) {
@@ -240,30 +256,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           
           // Show a helpful message to the user
           Alert.alert(
-            'Registrierung erfolgreich!',
-            'Dein Account wurde erstellt, aber wir konnten keine Bestätigungs-E-Mail senden.\n\n' +
-            'Bitte kontaktiere den Support oder versuche dich direkt anzumelden.\n\n' +
-            'Falls die E-Mail-Bestätigung erforderlich ist, wird der Administrator deinen Account manuell freischalten.',
+            'Registrierung teilweise erfolgreich',
+            'Dein Account wurde möglicherweise erstellt, aber wir konnten keine Bestätigungs-E-Mail senden.\n\n' +
+            '⚠️ WICHTIG: Die E-Mail-Bestätigung ist derzeit nicht konfiguriert.\n\n' +
+            'Bitte kontaktiere den Administrator unter:\n' +
+            'tomsc.rp@gmail.com\n\n' +
+            'Der Administrator muss:\n' +
+            '1. Die E-Mail-Bestätigung in Supabase deaktivieren ODER\n' +
+            '2. SMTP-Einstellungen konfigurieren\n\n' +
+            'Danach kannst du dich anmelden.',
             [{ text: 'OK' }]
           );
           
-          // Try to create the profile anyway if user was created
-          if (data?.user) {
-            const { error: profileError } = await supabase
-              .from('profiles')
-              .insert({
-                id: data.user.id,
-                name,
-                email,
-                role,
-              });
-
-            if (profileError) {
-              console.error('Profile creation error:', profileError);
-            }
-          }
-          
-          return { success: true };
+          return { 
+            success: false, 
+            error: 'E-Mail-Bestätigung fehlgeschlagen. Bitte kontaktiere den Administrator.' 
+          };
         }
         
         // For other errors, return them
@@ -294,21 +302,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Check if email confirmation is required
         if (data.session) {
           // User is automatically logged in (email confirmation disabled)
-          console.log('User automatically logged in');
+          console.log('User automatically logged in - email confirmation is disabled');
           await loadUserProfile(data.user.id);
           Alert.alert(
-            'Willkommen!',
-            'Dein Account wurde erfolgreich erstellt.',
-            [{ text: 'OK' }]
+            'Willkommen bei KickR! ⚽',
+            'Dein Account wurde erfolgreich erstellt und du bist jetzt angemeldet.',
+            [{ text: 'Los geht\'s!' }]
           );
         } else {
           // Email confirmation required
           console.log('Email confirmation required');
           Alert.alert(
-            'Registrierung erfolgreich!',
+            'Registrierung erfolgreich! 📧',
             'Bitte überprüfe deine E-Mail und bestätige deine Adresse, um dich anzumelden.\n\n' +
-            'Falls du keine E-Mail erhältst, kontaktiere bitte den Support.',
-            [{ text: 'OK' }]
+            '✉️ Wir haben dir eine Bestätigungs-E-Mail gesendet.\n\n' +
+            '⚠️ Falls du keine E-Mail erhältst:\n' +
+            '• Überprüfe deinen Spam-Ordner\n' +
+            '• Kontaktiere den Support: tomsc.rp@gmail.com\n\n' +
+            'Hinweis: Die E-Mail-Bestätigung muss vom Administrator konfiguriert werden.',
+            [{ text: 'Verstanden' }]
           );
         }
         
