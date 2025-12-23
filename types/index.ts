@@ -23,8 +23,11 @@ export type DealStatus = 'Angefragt' | 'Verhandlung' | 'Akzeptiert' | 'Aktiv' | 
 export interface User {
   id: string;
   name: string;
+  email?: string;
+  password?: string;
   role: UserRole;
   avatar?: string;
+  coverImage?: string;
   bio?: string;
   location?: string;
   friends: string[];

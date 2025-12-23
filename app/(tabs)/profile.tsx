@@ -1,11 +1,19 @@
 
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet, Image, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Image, TouchableOpacity, Platform, Alert } from 'react-native';
+import { router } from 'expo-router';
 import { colors } from '@/styles/commonStyles';
-import { currentUser, mockUsers } from '@/data/mockData';
+import { useAuth } from '@/contexts/AuthContext';
+import { mockUsers } from '@/data/mockData';
 import { IconSymbol } from '@/components/IconSymbol';
 
 export default function ProfileScreen() {
+  const { user, logout } = useAuth();
+
+  if (!user) {
+    return null;
+  }
+
   const getRoleLabel = (role: string) => {
     switch (role) {
       case 'trainer':
@@ -21,7 +29,25 @@ export default function ProfileScreen() {
     }
   };
 
-  const friends = mockUsers.filter(user => currentUser.friends.includes(user.id));
+  const friends = mockUsers.filter(u => user.friends.includes(u.id));
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Abmelden',
+      'Möchten Sie sich wirklich abmelden?',
+      [
+        { text: 'Abbrechen', style: 'cancel' },
+        {
+          text: 'Abmelden',
+          style: 'destructive',
+          onPress: async () => {
+            await logout();
+            router.replace('/(auth)/welcome');
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -38,19 +64,37 @@ export default function ProfileScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.profileCard}>
+        {user.coverImage && (
           <Image
-            source={{ uri: currentUser.avatar }}
-            style={styles.avatar}
+            source={{ uri: user.coverImage }}
+            style={styles.coverImage}
           />
-          <Text style={styles.name}>{currentUser.name}</Text>
-          <View style={styles.roleBadge}>
-            <Text style={styles.roleText}>{getRoleLabel(currentUser.role)}</Text>
-          </View>
-          {currentUser.bio && (
-            <Text style={styles.bio}>{currentUser.bio}</Text>
+        )}
+
+        <View style={styles.profileCard}>
+          {user.avatar ? (
+            <Image
+              source={{ uri: user.avatar }}
+              style={styles.avatar}
+            />
+          ) : (
+            <View style={styles.avatarPlaceholder}>
+              <IconSymbol
+                ios_icon_name="person.circle.fill"
+                android_material_icon_name="account_circle"
+                size={100}
+                color={colors.textSecondary}
+              />
+            </View>
           )}
-          {currentUser.location && (
+          <Text style={styles.name}>{user.name}</Text>
+          <View style={styles.roleBadge}>
+            <Text style={styles.roleText}>{getRoleLabel(user.role)}</Text>
+          </View>
+          {user.bio && (
+            <Text style={styles.bio}>{user.bio}</Text>
+          )}
+          {user.location && (
             <View style={styles.locationRow}>
               <IconSymbol
                 ios_icon_name="location"
@@ -58,13 +102,13 @@ export default function ProfileScreen() {
                 size={16}
                 color={colors.textSecondary}
               />
-              <Text style={styles.location}>{currentUser.location}</Text>
+              <Text style={styles.location}>{user.location}</Text>
             </View>
           )}
 
           <View style={styles.stats}>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>{currentUser.friends.length}</Text>
+              <Text style={styles.statValue}>{user.friends.length}</Text>
               <Text style={styles.statLabel}>Freunde</Text>
             </View>
             <View style={styles.statDivider} />
@@ -79,7 +123,10 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          <TouchableOpacity style={styles.editButton}>
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => router.push('/(auth)/edit-profile')}
+          >
             <IconSymbol
               ios_icon_name="pencil"
               android_material_icon_name="edit"
@@ -161,6 +208,18 @@ export default function ProfileScreen() {
               color={colors.textSecondary}
             />
           </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.menuItem, styles.logoutItem]}
+            onPress={handleLogout}
+          >
+            <IconSymbol
+              ios_icon_name="arrow.right.square"
+              android_material_icon_name="logout"
+              size={24}
+              color={colors.error}
+            />
+            <Text style={[styles.menuItemText, styles.logoutText]}>Abmelden</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
@@ -187,14 +246,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
     paddingBottom: 100,
+  },
+  coverImage: {
+    width: '100%',
+    height: 200,
   },
   profileCard: {
     backgroundColor: colors.white,
     borderRadius: 12,
     padding: 24,
     alignItems: 'center',
+    marginHorizontal: 16,
+    marginTop: 16,
     marginBottom: 16,
     boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
     elevation: 2,
@@ -203,6 +267,9 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
+    marginBottom: 16,
+  },
+  avatarPlaceholder: {
     marginBottom: 16,
   },
   name: {
@@ -282,6 +349,7 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: 16,
+    paddingHorizontal: 16,
   },
   sectionTitle: {
     fontSize: 18,
@@ -333,5 +401,11 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: colors.text,
+  },
+  logoutItem: {
+    marginTop: 8,
+  },
+  logoutText: {
+    color: colors.error,
   },
 });
