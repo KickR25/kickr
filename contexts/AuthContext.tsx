@@ -226,11 +226,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             name,
             role,
           },
+          emailRedirectTo: 'https://natively.dev/email-confirmed',
         },
       });
 
+      // Check for SMTP/email sending errors - these should not block registration
       if (error) {
         console.error('Supabase registration error:', error);
+        
+        // If it's an email sending error, we still want to proceed
+        if (error.message.includes('Error sending confirmation email')) {
+          console.log('Email sending failed, but user may have been created');
+          
+          // Show a helpful message to the user
+          Alert.alert(
+            'Registrierung erfolgreich!',
+            'Dein Account wurde erstellt, aber wir konnten keine Bestätigungs-E-Mail senden.\n\n' +
+            'Bitte kontaktiere den Support oder versuche dich direkt anzumelden.\n\n' +
+            'Falls die E-Mail-Bestätigung erforderlich ist, wird der Administrator deinen Account manuell freischalten.',
+            [{ text: 'OK' }]
+          );
+          
+          // Try to create the profile anyway if user was created
+          if (data?.user) {
+            const { error: profileError } = await supabase
+              .from('profiles')
+              .insert({
+                id: data.user.id,
+                name,
+                email,
+                role,
+              });
+
+            if (profileError) {
+              console.error('Profile creation error:', profileError);
+            }
+          }
+          
+          return { success: true };
+        }
+        
+        // For other errors, return them
         return { success: false, error: error.message || 'Registrierung fehlgeschlagen' };
       }
 
@@ -260,12 +296,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // User is automatically logged in (email confirmation disabled)
           console.log('User automatically logged in');
           await loadUserProfile(data.user.id);
+          Alert.alert(
+            'Willkommen!',
+            'Dein Account wurde erfolgreich erstellt.',
+            [{ text: 'OK' }]
+          );
         } else {
           // Email confirmation required
           console.log('Email confirmation required');
           Alert.alert(
             'Registrierung erfolgreich!',
-            'Bitte überprüfe deine E-Mail und bestätige deine Adresse, um dich anzumelden.',
+            'Bitte überprüfe deine E-Mail und bestätige deine Adresse, um dich anzumelden.\n\n' +
+            'Falls du keine E-Mail erhältst, kontaktiere bitte den Support.',
             [{ text: 'OK' }]
           );
         }

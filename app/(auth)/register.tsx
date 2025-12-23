@@ -38,9 +38,15 @@ export default function RegisterScreen() {
     setIsLoading(false);
 
     if (result.success) {
-      router.replace('/(auth)/create-profile');
-    } else {
-      Alert.alert('Fehler', result.error || 'Registrierung fehlgeschlagen');
+      // Success - the register function already shows appropriate alerts
+      // Navigate to login screen so user can log in after email confirmation
+      router.replace('/(auth)/login');
+    } else if (result.error) {
+      // Only show error alert if there's an actual error
+      // (not for email sending issues, which are handled in register function)
+      if (!result.error.includes('confirmation email')) {
+        Alert.alert('Fehler', result.error);
+      }
     }
   };
 
