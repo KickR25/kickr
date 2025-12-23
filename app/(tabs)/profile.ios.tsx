@@ -4,14 +4,17 @@ import { View, Text, ScrollView, StyleSheet, Image, TouchableOpacity, Platform, 
 import { router } from 'expo-router';
 import { colors } from '@/styles/commonStyles';
 import { useAuth } from '@/contexts/AuthContext';
-import { mockUsers } from '@/data/mockData';
 import { IconSymbol } from '@/components/IconSymbol';
 
 export default function ProfileScreen() {
-  const { user, logout } = useAuth();
+  const { user, logout, posts, trainings } = useAuth();
 
   if (!user) {
-    return null;
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>Bitte melden Sie sich an</Text>
+      </View>
+    );
   }
 
   const getRoleLabel = (role: string) => {
@@ -29,7 +32,8 @@ export default function ProfileScreen() {
     }
   };
 
-  const friends = mockUsers.filter(u => user.friends.includes(u.id));
+  const userPosts = posts.filter(p => p.userId === user.id);
+  const userTrainings = trainings.filter(t => t.userId === user.id);
 
   const handleLogout = () => {
     Alert.alert(
@@ -113,12 +117,12 @@ export default function ProfileScreen() {
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>12</Text>
+              <Text style={styles.statValue}>{userPosts.length}</Text>
               <Text style={styles.statLabel}>Beiträge</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>5</Text>
+              <Text style={styles.statValue}>{userTrainings.length}</Text>
               <Text style={styles.statLabel}>Trainings</Text>
             </View>
           </View>
@@ -135,30 +139,6 @@ export default function ProfileScreen() {
             />
             <Text style={styles.editButtonText}>Profil bearbeiten</Text>
           </TouchableOpacity>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Freunde ({friends.length})</Text>
-          {friends.map((friend) => (
-            <View key={friend.id} style={styles.friendCard}>
-              <Image
-                source={{ uri: friend.avatar }}
-                style={styles.friendAvatar}
-              />
-              <View style={styles.friendInfo}>
-                <Text style={styles.friendName}>{friend.name}</Text>
-                <Text style={styles.friendRole}>{getRoleLabel(friend.role)}</Text>
-              </View>
-              <TouchableOpacity>
-                <IconSymbol
-                  ios_icon_name="chevron.right"
-                  android_material_icon_name="chevron_right"
-                  size={24}
-                  color={colors.textSecondary}
-                />
-              </TouchableOpacity>
-            </View>
-          ))}
         </View>
 
         <View style={styles.section}>
@@ -233,7 +213,7 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: colors.primary,
-    paddingTop: Platform.OS === 'android' ? 48 : 60,
+    paddingTop: 60,
     paddingBottom: 16,
     paddingHorizontal: 16,
     alignItems: 'center',
@@ -357,35 +337,6 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginBottom: 12,
   },
-  friendCard: {
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    padding: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
-    elevation: 2,
-  },
-  friendAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    marginRight: 12,
-  },
-  friendInfo: {
-    flex: 1,
-  },
-  friendName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  friendRole: {
-    fontSize: 13,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
   menuItem: {
     backgroundColor: colors.white,
     borderRadius: 12,
@@ -407,5 +358,11 @@ const styles = StyleSheet.create({
   },
   logoutText: {
     color: colors.error,
+  },
+  errorText: {
+    fontSize: 16,
+    color: colors.error,
+    textAlign: 'center',
+    marginTop: 40,
   },
 });

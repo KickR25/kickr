@@ -1,27 +1,102 @@
 
 import React, { useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput, Share, Alert, ActionSheetIOS, Platform } from 'react-native';
 import { Post } from '@/types';
 import { colors, commonStyles } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface PostCardProps {
   post: Post;
-  currentUserId: string;
   onLike: (postId: string) => void;
   onComment: (postId: string, comment: string) => void;
   onShare: (postId: string) => void;
+  onRepost?: (postId: string) => void;
 }
 
-export default function PostCard({ post, currentUserId, onLike, onComment, onShare }: PostCardProps) {
+export default function PostCard({ post, onLike, onComment, onShare, onRepost }: PostCardProps) {
+  const { user } = useAuth();
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
-  const isLiked = post.likes.includes(currentUserId);
+
+  if (!user) {
+    return null;
+  }
+
+  const isLiked = post.likes.includes(user.id);
 
   const handleComment = () => {
     if (commentText.trim()) {
       onComment(post.id, commentText);
       setCommentText('');
+    }
+  };
+
+  const handleShare = async () => {
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ['Abbrechen', 'In meinem Profil teilen', 'Über System teilen'],
+          cancelButtonIndex: 0,
+        },
+        async (buttonIndex) => {
+          if (buttonIndex === 1) {
+            // Repost to own profile
+            if (onRepost) {
+              onRepost(post.id);
+            }
+            onShare(post.id);
+            Alert.alert('Erfolg', 'Beitrag wurde in deinem Profil geteilt');
+          } else if (buttonIndex === 2) {
+            // Native share
+            try {
+              await Share.share({
+                message: `${post.userName}: ${post.content}\n\nGeteilt über KickR`,
+                title: 'KickR Beitrag',
+              });
+              onShare(post.id);
+            } catch (error) {
+              console.error('Error sharing:', error);
+            }
+          }
+        }
+      );
+    } else {
+      // Android - show custom dialog
+      Alert.alert(
+        'Beitrag teilen',
+        'Wie möchtest du diesen Beitrag teilen?',
+        [
+          {
+            text: 'Abbrechen',
+            style: 'cancel',
+          },
+          {
+            text: 'In meinem Profil teilen',
+            onPress: () => {
+              if (onRepost) {
+                onRepost(post.id);
+              }
+              onShare(post.id);
+              Alert.alert('Erfolg', 'Beitrag wurde in deinem Profil geteilt');
+            },
+          },
+          {
+            text: 'Über System teilen',
+            onPress: async () => {
+              try {
+                await Share.share({
+                  message: `${post.userName}: ${post.content}\n\nGeteilt über KickR`,
+                  title: 'KickR Beitrag',
+                });
+                onShare(post.id);
+              } catch (error) {
+                console.error('Error sharing:', error);
+              }
+            },
+          },
+        ]
+      );
     }
   };
 
@@ -95,7 +170,7 @@ export default function PostCard({ post, currentUserId, onLike, onComment, onSha
 
         <TouchableOpacity
           style={styles.actionButton}
-          onPress={() => onShare(post.id)}
+          onPress={handleShare}
         >
           <IconSymbol
             ios_icon_name="arrowshape.turn.up.right"

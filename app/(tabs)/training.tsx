@@ -1,49 +1,22 @@
 
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Platform, Image } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Platform, Image, Alert } from 'react-native';
 import { colors } from '@/styles/commonStyles';
 import TrainingCard from '@/components/TrainingCard';
-import { mockTrainings, currentUser } from '@/data/mockData';
-import { Training } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
 import { IconSymbol } from '@/components/IconSymbol';
 import { router } from 'expo-router';
 
 export default function TrainingScreen() {
-  const [trainings, setTrainings] = useState<Training[]>(mockTrainings);
+  const { user, trainings, likeTraining, saveTraining } = useAuth();
 
-  const handleLike = (trainingId: string) => {
-    setTrainings(prevTrainings =>
-      prevTrainings.map(training => {
-        if (training.id === trainingId) {
-          const isLiked = training.likes.includes(currentUser.id);
-          return {
-            ...training,
-            likes: isLiked
-              ? training.likes.filter(id => id !== currentUser.id)
-              : [...training.likes, currentUser.id],
-          };
-        }
-        return training;
-      })
+  if (!user) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>Bitte melden Sie sich an</Text>
+      </View>
     );
-  };
-
-  const handleSave = (trainingId: string) => {
-    setTrainings(prevTrainings =>
-      prevTrainings.map(training => {
-        if (training.id === trainingId) {
-          const isSaved = training.saves.includes(currentUser.id);
-          return {
-            ...training,
-            saves: isSaved
-              ? training.saves.filter(id => id !== currentUser.id)
-              : [...training.saves, currentUser.id],
-          };
-        }
-        return training;
-      })
-    );
-  };
+  }
 
   return (
     <View style={styles.container}>
@@ -63,7 +36,9 @@ export default function TrainingScreen() {
       >
         <TouchableOpacity
           style={styles.createButton}
-          onPress={() => router.push('/create-training')}
+          onPress={() => {
+            Alert.alert('Info', 'Training erstellen Funktion wird bald verfügbar sein');
+          }}
         >
           <IconSymbol
             ios_icon_name="plus.circle.fill"
@@ -94,15 +69,30 @@ export default function TrainingScreen() {
           </ScrollView>
         </View>
 
-        {trainings.map((training) => (
-          <TrainingCard
-            key={training.id}
-            training={training}
-            currentUserId={currentUser.id}
-            onLike={handleLike}
-            onSave={handleSave}
-          />
-        ))}
+        {trainings.length === 0 ? (
+          <View style={styles.emptyState}>
+            <IconSymbol
+              ios_icon_name="figure.soccer"
+              android_material_icon_name="sports_soccer"
+              size={64}
+              color={colors.textSecondary}
+            />
+            <Text style={styles.emptyStateTitle}>Noch keine Trainings</Text>
+            <Text style={styles.emptyStateText}>
+              Erstelle dein erstes Training oder warte auf Beiträge von anderen Trainern
+            </Text>
+          </View>
+        ) : (
+          trainings.map((training) => (
+            <TrainingCard
+              key={training.id}
+              training={training}
+              currentUserId={user.id}
+              onLike={likeTraining}
+              onSave={saveTraining}
+            />
+          ))
+        )}
       </ScrollView>
     </View>
   );
@@ -179,5 +169,29 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: colors.primary,
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+  },
+  emptyStateTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyStateText: {
+    fontSize: 15,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    paddingHorizontal: 32,
+  },
+  errorText: {
+    fontSize: 16,
+    color: colors.error,
+    textAlign: 'center',
+    marginTop: 40,
   },
 });

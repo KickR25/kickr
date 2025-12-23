@@ -1,19 +1,25 @@
 
-import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import React from 'react';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Platform, Image } from 'react-native';
 import { colors } from '@/styles/commonStyles';
 import SponsorPackageCard from '@/components/SponsorPackageCard';
-import { mockSponsorPackages, currentUser } from '@/data/mockData';
-import { SponsorPackage } from '@/types';
+import { mockSponsorPackages } from '@/data/mockData';
 import { IconSymbol } from '@/components/IconSymbol';
-import { router } from 'expo-router';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function SponsorsScreen() {
-  const [packages, setPackages] = useState<SponsorPackage[]>(mockSponsorPackages);
+  const { user } = useAuth();
+
+  if (!user) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>Bitte melden Sie sich an</Text>
+      </View>
+    );
+  }
 
   const handleRequest = (packageId: string) => {
     console.log('Request package:', packageId);
-    alert('Anfrage gesendet! Der Verein wird sich bei dir melden.');
   };
 
   return (
@@ -24,7 +30,7 @@ export default function SponsorsScreen() {
           style={styles.logo}
           resizeMode="contain"
         />
-        <Text style={styles.headerSubtitle}>Finde die perfekte Partnerschaft</Text>
+        <Text style={styles.headerSubtitle}>Finde deinen Sponsor</Text>
       </View>
 
       <ScrollView
@@ -32,20 +38,17 @@ export default function SponsorsScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {(currentUser.role === 'club' || currentUser.role === 'trainer') && (
-          <TouchableOpacity
-            style={styles.createButton}
-            onPress={() => router.push('/create-package')}
-          >
+        {user.role === 'club' || user.role === 'trainer' ? (
+          <TouchableOpacity style={styles.createButton}>
             <IconSymbol
               ios_icon_name="plus.circle.fill"
               android_material_icon_name="add_circle"
               size={24}
               color={colors.white}
             />
-            <Text style={styles.createButtonText}>Paket erstellen</Text>
+            <Text style={styles.createButtonText}>Sponsorenpaket erstellen</Text>
           </TouchableOpacity>
-        )}
+        ) : null}
 
         <View style={styles.filterRow}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -64,13 +67,28 @@ export default function SponsorsScreen() {
           </ScrollView>
         </View>
 
-        {packages.map((pkg) => (
-          <SponsorPackageCard
-            key={pkg.id}
-            package={pkg}
-            onRequest={currentUser.role === 'sponsor' ? handleRequest : undefined}
-          />
-        ))}
+        {mockSponsorPackages.length === 0 ? (
+          <View style={styles.emptyState}>
+            <IconSymbol
+              ios_icon_name="star"
+              android_material_icon_name="star"
+              size={64}
+              color={colors.textSecondary}
+            />
+            <Text style={styles.emptyStateTitle}>Noch keine Sponsorenpakete</Text>
+            <Text style={styles.emptyStateText}>
+              Erstelle dein erstes Sponsorenpaket oder warte auf Angebote
+            </Text>
+          </View>
+        ) : (
+          mockSponsorPackages.map((pkg) => (
+            <SponsorPackageCard
+              key={pkg.id}
+              package={pkg}
+              onRequest={handleRequest}
+            />
+          ))
+        )}
       </ScrollView>
     </View>
   );
@@ -104,7 +122,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 120,
+    paddingBottom: 100,
   },
   createButton: {
     backgroundColor: colors.primary,
@@ -147,5 +165,29 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: colors.primary,
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+  },
+  emptyStateTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyStateText: {
+    fontSize: 15,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    paddingHorizontal: 32,
+  },
+  errorText: {
+    fontSize: 16,
+    color: colors.error,
+    textAlign: 'center',
+    marginTop: 40,
   },
 });

@@ -1,69 +1,47 @@
 
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Platform, Image, TextInput, Alert } from 'react-native';
 import { colors, commonStyles } from '@/styles/commonStyles';
 import PostCard from '@/components/PostCard';
-import { mockPosts, currentUser } from '@/data/mockData';
-import { Post } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
 import { IconSymbol } from '@/components/IconSymbol';
 
 export default function HomeScreen() {
-  const [posts, setPosts] = useState<Post[]>(mockPosts);
+  const { user, posts, likePost, commentOnPost, sharePost, addPost } = useAuth();
+  const [showCreatePost, setShowCreatePost] = useState(false);
+  const [newPostContent, setNewPostContent] = useState('');
 
-  const handleLike = (postId: string) => {
-    setPosts(prevPosts =>
-      prevPosts.map(post => {
-        if (post.id === postId) {
-          const isLiked = post.likes.includes(currentUser.id);
-          return {
-            ...post,
-            likes: isLiked
-              ? post.likes.filter(id => id !== currentUser.id)
-              : [...post.likes, currentUser.id],
-          };
-        }
-        return post;
-      })
+  if (!user) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>Bitte melden Sie sich an</Text>
+      </View>
     );
+  }
+
+  const handleCreatePost = async () => {
+    if (!newPostContent.trim()) {
+      Alert.alert('Fehler', 'Bitte gib einen Text ein');
+      return;
+    }
+
+    await addPost({
+      content: newPostContent,
+    });
+
+    setNewPostContent('');
+    setShowCreatePost(false);
+    Alert.alert('Erfolg', 'Beitrag wurde erstellt');
   };
 
-  const handleComment = (postId: string, commentText: string) => {
-    setPosts(prevPosts =>
-      prevPosts.map(post => {
-        if (post.id === postId) {
-          return {
-            ...post,
-            comments: [
-              ...post.comments,
-              {
-                id: `c${Date.now()}`,
-                userId: currentUser.id,
-                userName: currentUser.name,
-                userAvatar: currentUser.avatar,
-                content: commentText,
-                timestamp: new Date(),
-              },
-            ],
-          };
-        }
-        return post;
-      })
-    );
-  };
-
-  const handleShare = (postId: string) => {
-    setPosts(prevPosts =>
-      prevPosts.map(post => {
-        if (post.id === postId) {
-          return {
-            ...post,
-            shares: post.shares + 1,
-          };
-        }
-        return post;
-      })
-    );
-    console.log('Share post:', postId);
+  const handleRepost = async (postId: string) => {
+    const originalPost = posts.find(p => p.id === postId);
+    if (originalPost) {
+      await addPost({
+        content: `Geteilt von ${originalPost.userName}:\n\n${originalPost.content}`,
+        images: originalPost.images,
+      });
+    }
   };
 
   return (
@@ -82,7 +60,10 @@ export default function HomeScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <TouchableOpacity style={styles.createPost}>
+        <TouchableOpacity
+          style={styles.createPost}
+          onPress={() => setShowCreatePost(!showCreatePost)}
+        >
           <IconSymbol
             ios_icon_name="plus.circle.fill"
             android_material_icon_name="add_circle"
@@ -92,16 +73,62 @@ export default function HomeScreen() {
           <Text style={styles.createPostText}>Was gibt&apos;s Neues?</Text>
         </TouchableOpacity>
 
-        {posts.map((post) => (
-          <PostCard
-            key={post.id}
-            post={post}
-            currentUserId={currentUser.id}
-            onLike={handleLike}
-            onComment={handleComment}
-            onShare={handleShare}
-          />
-        ))}
+        {showCreatePost && (
+          <View style={styles.createPostForm}>
+            <TextInput
+              style={styles.createPostInput}
+              placeholder="Teile deine Gedanken..."
+              placeholderTextColor={colors.textSecondary}
+              value={newPostContent}
+              onChangeText={setNewPostContent}
+              multiline
+              numberOfLines={4}
+            />
+            <View style={styles.createPostActions}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => {
+                  setShowCreatePost(false);
+                  setNewPostContent('');
+                }}
+              >
+                <Text style={styles.cancelButtonText}>Abbrechen</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.postButton}
+                onPress={handleCreatePost}
+              >
+                <Text style={styles.postButtonText}>Posten</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {posts.length === 0 ? (
+          <View style={styles.emptyState}>
+            <IconSymbol
+              ios_icon_name="doc.text"
+              android_material_icon_name="article"
+              size={64}
+              color={colors.textSecondary}
+            />
+            <Text style={styles.emptyStateTitle}>Noch keine Beiträge</Text>
+            <Text style={styles.emptyStateText}>
+              Erstelle deinen ersten Beitrag oder folge anderen Nutzern
+            </Text>
+          </View>
+        ) : (
+          posts.map((post) => (
+            <PostCard
+              key={post.id}
+              post={post}
+              onLike={likePost}
+              onComment={commentOnPost}
+              onShare={sharePost}
+              onRepost={handleRepost}
+            />
+          ))
+        )}
       </ScrollView>
     </View>
   );
@@ -151,5 +178,74 @@ const styles = StyleSheet.create({
   createPostText: {
     fontSize: 16,
     color: colors.textSecondary,
+  },
+  createPostForm: {
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+    elevation: 2,
+  },
+  createPostInput: {
+    backgroundColor: colors.card,
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    color: colors.text,
+    minHeight: 100,
+    textAlignVertical: 'top',
+    marginBottom: 12,
+  },
+  createPostActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 8,
+  },
+  cancelButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: colors.card,
+  },
+  cancelButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
+  postButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: colors.primary,
+  },
+  postButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.white,
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+  },
+  emptyStateTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyStateText: {
+    fontSize: 15,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    paddingHorizontal: 32,
+  },
+  errorText: {
+    fontSize: 16,
+    color: colors.error,
+    textAlign: 'center',
+    marginTop: 40,
   },
 });
