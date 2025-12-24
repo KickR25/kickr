@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { Training } from '@/types';
-import { colors } from '@/styles/commonStyles';
+import { getColors } from '@/styles/commonStyles';
+import { useTheme } from '@/contexts/ThemeContext';
 import { IconSymbol } from '@/components/IconSymbol';
 
 interface TrainingCardProps {
@@ -14,33 +15,35 @@ interface TrainingCardProps {
 }
 
 export default function TrainingCard({ training, currentUserId, onLike, onSave, onPress }: TrainingCardProps) {
+  const { isDark } = useTheme();
+  const colors = getColors(isDark);
   const isLiked = training.likes.includes(currentUserId);
   const isSaved = training.saves.includes(currentUserId);
 
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity style={[styles.container, { backgroundColor: colors.cardWhite, borderColor: colors.border }]} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.header}>
         <Image
           source={{ uri: training.userAvatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400' }}
-          style={styles.avatar}
+          style={[styles.avatar, { borderColor: colors.borderLight }]}
         />
         <View style={styles.headerInfo}>
-          <Text style={styles.userName}>{training.userName}</Text>
+          <Text style={[styles.userName, { color: colors.text }]}>{training.userName}</Text>
           <View style={styles.badges}>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{training.teamCategory}</Text>
+            <View style={[styles.badge, { backgroundColor: colors.primary }]}>
+              <Text style={[styles.badgeText, { color: colors.white }]}>{training.teamCategory}</Text>
             </View>
             {training.gender && (
-              <View style={[styles.badge, styles.badgeSecondary]}>
-                <Text style={styles.badgeText}>{training.gender}</Text>
+              <View style={[styles.badge, styles.badgeSecondary, { backgroundColor: colors.accent }]}>
+                <Text style={[styles.badgeText, { color: colors.white }]}>{training.gender}</Text>
               </View>
             )}
           </View>
         </View>
       </View>
 
-      <Text style={styles.title}>{training.title}</Text>
-      <Text style={styles.goal}>Ziel: {training.goal}</Text>
+      <Text style={[styles.title, { color: colors.text }]}>{training.title}</Text>
+      <Text style={[styles.goal, { color: colors.textSecondary }]}>Ziel: {training.goal}</Text>
 
       {training.images && training.images.length > 0 && (
         <Image
@@ -50,7 +53,7 @@ export default function TrainingCard({ training, currentUserId, onLike, onSave, 
         />
       )}
 
-      <View style={styles.details}>
+      <View style={[styles.details, { backgroundColor: colors.card }]}>
         <View style={styles.detailItem}>
           <IconSymbol
             ios_icon_name="clock"
@@ -58,7 +61,7 @@ export default function TrainingCard({ training, currentUserId, onLike, onSave, 
             size={16}
             color={colors.primary}
           />
-          <Text style={styles.detailText}>{training.duration}</Text>
+          <Text style={[styles.detailText, { color: colors.text }]}>{training.duration}</Text>
         </View>
         <View style={styles.detailItem}>
           <IconSymbol
@@ -67,11 +70,11 @@ export default function TrainingCard({ training, currentUserId, onLike, onSave, 
             size={16}
             color={colors.primary}
           />
-          <Text style={styles.detailText}>{training.playerCount}</Text>
+          <Text style={[styles.detailText, { color: colors.text }]}>{training.playerCount}</Text>
         </View>
       </View>
 
-      <View style={styles.actions}>
+      <View style={[styles.actions, { borderTopColor: colors.border }]}>
         <TouchableOpacity
           style={styles.actionButton}
           onPress={() => onLike(training.id)}
@@ -82,7 +85,7 @@ export default function TrainingCard({ training, currentUserId, onLike, onSave, 
             size={22}
             color={isLiked ? colors.secondary : colors.textSecondary}
           />
-          <Text style={[styles.actionText, isLiked && { color: colors.secondary, fontWeight: '700' }]}>
+          <Text style={[styles.actionText, { color: isLiked ? colors.secondary : colors.textSecondary }, isLiked && { fontWeight: '700' }]}>
             {training.likes.length}
           </Text>
         </TouchableOpacity>
@@ -94,7 +97,7 @@ export default function TrainingCard({ training, currentUserId, onLike, onSave, 
             size={22}
             color={colors.textSecondary}
           />
-          <Text style={styles.actionText}>{training.comments.length}</Text>
+          <Text style={[styles.actionText, { color: colors.textSecondary }]}>{training.comments.length}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -107,7 +110,7 @@ export default function TrainingCard({ training, currentUserId, onLike, onSave, 
             size={22}
             color={isSaved ? colors.primary : colors.textSecondary}
           />
-          <Text style={[styles.actionText, isSaved && { color: colors.primary, fontWeight: '700' }]}>
+          <Text style={[styles.actionText, { color: isSaved ? colors.primary : colors.textSecondary }, isSaved && { fontWeight: '700' }]}>
             Speichern
           </Text>
         </TouchableOpacity>
@@ -118,7 +121,6 @@ export default function TrainingCard({ training, currentUserId, onLike, onSave, 
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.white,
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
@@ -136,7 +138,6 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     marginRight: 12,
     borderWidth: 2,
-    borderColor: colors.borderLight,
   },
   headerInfo: {
     flex: 1,
@@ -144,7 +145,6 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 16,
     fontWeight: '700',
-    color: colors.text,
     marginBottom: 6,
   },
   badges: {
@@ -152,16 +152,13 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   badge: {
-    backgroundColor: colors.primary,
     paddingVertical: 4,
     paddingHorizontal: 10,
     borderRadius: 14,
   },
   badgeSecondary: {
-    backgroundColor: colors.accent,
   },
   badgeText: {
-    color: colors.white,
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 0.2,
@@ -169,13 +166,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '700',
-    color: colors.text,
     marginBottom: 6,
     letterSpacing: -0.2,
   },
   goal: {
     fontSize: 14,
-    color: colors.textSecondary,
     marginBottom: 12,
     fontWeight: '500',
   },
@@ -191,7 +186,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingVertical: 8,
     paddingHorizontal: 12,
-    backgroundColor: colors.card,
     borderRadius: 10,
   },
   detailItem: {
@@ -201,7 +195,6 @@ const styles = StyleSheet.create({
   },
   detailText: {
     fontSize: 14,
-    color: colors.text,
     fontWeight: '600',
   },
   actions: {
@@ -209,7 +202,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
   },
   actionButton: {
     flexDirection: 'row',
@@ -221,7 +213,6 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: 14,
-    color: colors.textSecondary,
     fontWeight: '600',
   },
 });

@@ -12,11 +12,12 @@ import {
   DarkTheme,
   DefaultTheme,
   Theme,
-  ThemeProvider,
+  ThemeProvider as NavigationThemeProvider,
 } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { WidgetProvider } from "@/contexts/WidgetContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { ThemeProvider, useTheme } from "@/contexts/ThemeContext";
 import { useBanCheck } from "@/hooks/useBanCheck";
 import BanScreen from "@/components/BanScreen";
 
@@ -28,7 +29,7 @@ export const unstable_settings = {
 };
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme();
+  const { isDark } = useTheme();
   const networkState = useNetworkState();
   const { isAuthenticated, isLoading } = useAuth();
   const { isChecking, hasFullBan, getFullBan } = useBanCheck();
@@ -69,30 +70,31 @@ function RootLayoutNav() {
     ...DefaultTheme,
     dark: false,
     colors: {
-      primary: "rgb(0, 122, 255)",
-      background: "rgb(242, 242, 247)",
-      card: "rgb(255, 255, 255)",
-      text: "rgb(0, 0, 0)",
-      border: "rgb(216, 216, 220)",
-      notification: "rgb(255, 59, 48)",
+      primary: "rgb(0, 217, 95)",
+      background: "rgb(255, 255, 255)",
+      card: "rgb(249, 250, 251)",
+      text: "rgb(26, 26, 26)",
+      border: "rgb(229, 231, 235)",
+      notification: "rgb(255, 107, 53)",
     },
   };
 
   const CustomDarkTheme: Theme = {
     ...DarkTheme,
+    dark: true,
     colors: {
-      primary: "rgb(10, 132, 255)",
-      background: "rgb(1, 1, 1)",
-      card: "rgb(28, 28, 30)",
-      text: "rgb(255, 255, 255)",
-      border: "rgb(44, 44, 46)",
-      notification: "rgb(255, 69, 58)",
+      primary: "rgb(0, 217, 95)",
+      background: "rgb(15, 23, 42)",
+      card: "rgb(30, 41, 59)",
+      text: "rgb(241, 245, 249)",
+      border: "rgb(51, 65, 85)",
+      notification: "rgb(255, 107, 53)",
     },
   };
 
   return (
-    <ThemeProvider
-      value={colorScheme === "dark" ? CustomDarkTheme : CustomDefaultTheme}
+    <NavigationThemeProvider
+      value={isDark ? CustomDarkTheme : CustomDefaultTheme}
     >
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(auth)" />
@@ -123,8 +125,9 @@ function RootLayoutNav() {
           }}
         />
       </Stack>
-      <SystemBars style={"auto"} />
-    </ThemeProvider>
+      <StatusBar style={isDark ? "light" : "dark"} animated />
+      <SystemBars style={isDark ? "light" : "dark"} />
+    </NavigationThemeProvider>
   );
 }
 
@@ -144,15 +147,14 @@ export default function RootLayout() {
   }
 
   return (
-    <>
-      <StatusBar style="auto" animated />
-      <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ThemeProvider>
         <WidgetProvider>
           <AuthProvider>
             <RootLayoutNav />
           </AuthProvider>
         </WidgetProvider>
-      </GestureHandlerRootView>
-    </>
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }

@@ -1,20 +1,23 @@
 
 import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Platform, Image, TextInput, Alert } from 'react-native';
-import { colors, commonStyles } from '@/styles/commonStyles';
+import { getColors } from '@/styles/commonStyles';
 import PostCard from '@/components/PostCard';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { IconSymbol } from '@/components/IconSymbol';
 
 export default function HomeScreen() {
   const { user, posts, likePost, commentOnPost, sharePost, addPost } = useAuth();
+  const { isDark } = useTheme();
+  const colors = getColors(isDark);
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [newPostContent, setNewPostContent] = useState('');
 
   if (!user) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>Bitte melden Sie sich an</Text>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <Text style={[styles.errorText, { color: colors.error }]}>Bitte melden Sie sich an</Text>
       </View>
     );
   }
@@ -45,14 +48,14 @@ export default function HomeScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.primary }]}>
         <Image
           source={require('@/assets/images/a782a098-0dea-4c85-9045-a026ad2ee036.png')}
           style={styles.logo}
           resizeMode="contain"
         />
-        <Text style={styles.headerSubtitle}>Dein Fußball-Netzwerk</Text>
+        <Text style={[styles.headerSubtitle, { color: colors.white }]}>Dein Fußball-Netzwerk</Text>
       </View>
 
       <ScrollView
@@ -61,7 +64,7 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         <TouchableOpacity
-          style={styles.createPost}
+          style={[styles.createPost, { backgroundColor: colors.cardWhite, borderColor: colors.border }]}
           onPress={() => setShowCreatePost(!showCreatePost)}
         >
           <IconSymbol
@@ -70,13 +73,13 @@ export default function HomeScreen() {
             size={24}
             color={colors.primary}
           />
-          <Text style={styles.createPostText}>Was gibt&apos;s Neues?</Text>
+          <Text style={[styles.createPostText, { color: colors.textSecondary }]}>Was gibt&apos;s Neues?</Text>
         </TouchableOpacity>
 
         {showCreatePost && (
-          <View style={styles.createPostForm}>
+          <View style={[styles.createPostForm, { backgroundColor: colors.cardWhite, borderColor: colors.border }]}>
             <TextInput
-              style={styles.createPostInput}
+              style={[styles.createPostInput, { backgroundColor: colors.card, color: colors.text }]}
               placeholder="Teile deine Gedanken..."
               placeholderTextColor={colors.textSecondary}
               value={newPostContent}
@@ -86,19 +89,19 @@ export default function HomeScreen() {
             />
             <View style={styles.createPostActions}>
               <TouchableOpacity
-                style={styles.cancelButton}
+                style={[styles.cancelButton, { backgroundColor: colors.card }]}
                 onPress={() => {
                   setShowCreatePost(false);
                   setNewPostContent('');
                 }}
               >
-                <Text style={styles.cancelButtonText}>Abbrechen</Text>
+                <Text style={[styles.cancelButtonText, { color: colors.textSecondary }]}>Abbrechen</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.postButton}
+                style={[styles.postButton, { backgroundColor: colors.primary }]}
                 onPress={handleCreatePost}
               >
-                <Text style={styles.postButtonText}>Posten</Text>
+                <Text style={[styles.postButtonText, { color: colors.white }]}>Posten</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -112,8 +115,8 @@ export default function HomeScreen() {
               size={64}
               color={colors.textSecondary}
             />
-            <Text style={styles.emptyStateTitle}>Noch keine Beiträge</Text>
-            <Text style={styles.emptyStateText}>
+            <Text style={[styles.emptyStateTitle, { color: colors.text }]}>Noch keine Beiträge</Text>
+            <Text style={[styles.emptyStateText, { color: colors.textSecondary }]}>
               Erstelle deinen ersten Beitrag oder folge anderen Nutzern
             </Text>
           </View>
@@ -137,10 +140,8 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   header: {
-    backgroundColor: colors.primary,
     paddingTop: Platform.OS === 'android' ? 48 : 60,
     paddingBottom: 16,
     paddingHorizontal: 16,
@@ -153,7 +154,6 @@ const styles = StyleSheet.create({
   },
   headerSubtitle: {
     fontSize: 14,
-    color: colors.white,
     opacity: 0.9,
     marginTop: 4,
   },
@@ -165,7 +165,6 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   createPost: {
-    backgroundColor: colors.white,
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
@@ -177,10 +176,8 @@ const styles = StyleSheet.create({
   },
   createPostText: {
     fontSize: 16,
-    color: colors.textSecondary,
   },
   createPostForm: {
-    backgroundColor: colors.white,
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
@@ -188,11 +185,9 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   createPostInput: {
-    backgroundColor: colors.card,
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    color: colors.text,
     minHeight: 100,
     textAlignVertical: 'top',
     marginBottom: 12,
@@ -206,23 +201,19 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 8,
-    backgroundColor: colors.card,
   },
   cancelButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.textSecondary,
   },
   postButton: {
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 8,
-    backgroundColor: colors.primary,
   },
   postButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.white,
   },
   emptyState: {
     alignItems: 'center',
@@ -232,19 +223,16 @@ const styles = StyleSheet.create({
   emptyStateTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: colors.text,
     marginTop: 16,
     marginBottom: 8,
   },
   emptyStateText: {
     fontSize: 15,
-    color: colors.textSecondary,
     textAlign: 'center',
     paddingHorizontal: 32,
   },
   errorText: {
     fontSize: 16,
-    color: colors.error,
     textAlign: 'center',
     marginTop: 40,
   },

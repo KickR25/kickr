@@ -12,7 +12,9 @@ import { useRouter, usePathname } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/IconSymbol';
 import { BlurView } from 'expo-blur';
-import { useTheme } from '@react-navigation/native';
+import { useTheme as useNavigationTheme } from '@react-navigation/native';
+import { useTheme } from '@/contexts/ThemeContext';
+import { getColors } from '@/styles/commonStyles';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -21,7 +23,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Href } from 'expo-router';
-import { colors } from '@/styles/commonStyles';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -47,7 +48,9 @@ export default function FloatingTabBar({
 }: FloatingTabBarProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const theme = useTheme();
+  const navigationTheme = useNavigationTheme();
+  const { isDark } = useTheme();
+  const colors = getColors(isDark);
   const animatedValue = useSharedValue(0);
 
   // Improved active tab detection with better path matching
@@ -122,20 +125,20 @@ export default function FloatingTabBar({
     blurContainer: {
       ...styles.blurContainer,
       borderWidth: 1.5,
-      borderColor: theme.dark ? 'rgba(0, 217, 95, 0.2)' : 'rgba(0, 217, 95, 0.15)',
+      borderColor: isDark ? 'rgba(0, 217, 95, 0.2)' : 'rgba(0, 217, 95, 0.15)',
       ...Platform.select({
         ios: {
-          backgroundColor: theme.dark
+          backgroundColor: isDark
             ? 'rgba(15, 23, 42, 0.85)'
             : 'rgba(255, 255, 255, 0.75)',
         },
         android: {
-          backgroundColor: theme.dark
+          backgroundColor: isDark
             ? 'rgba(15, 23, 42, 0.95)'
             : 'rgba(255, 255, 255, 0.95)',
         },
         web: {
-          backgroundColor: theme.dark
+          backgroundColor: isDark
             ? 'rgba(15, 23, 42, 0.95)'
             : 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(10px)',
@@ -147,7 +150,7 @@ export default function FloatingTabBar({
     },
     indicator: {
       ...styles.indicator,
-      backgroundColor: theme.dark
+      backgroundColor: isDark
         ? 'rgba(0, 217, 95, 0.15)' // Subtle green overlay in dark mode
         : 'rgba(0, 217, 95, 0.12)', // Subtle green overlay in light mode
       width: `${tabWidthPercent}%` as `${number}%`, // Dynamic width based on number of tabs
@@ -185,12 +188,12 @@ export default function FloatingTabBar({
                       android_material_icon_name={tab.icon}
                       ios_icon_name={tab.icon}
                       size={26}
-                      color={isActive ? colors.primary : (theme.dark ? colors.darkTextSecondary : colors.textSecondary)}
+                      color={isActive ? colors.primary : colors.textSecondary}
                     />
                     <Text
                       style={[
                         styles.tabLabel,
-                        { color: theme.dark ? colors.darkTextSecondary : colors.textSecondary },
+                        { color: colors.textSecondary },
                         isActive && { color: colors.primary, fontWeight: '700' },
                       ]}
                     >

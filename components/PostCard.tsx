@@ -2,9 +2,10 @@
 import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput, Share, Alert, ActionSheetIOS, Platform } from 'react-native';
 import { Post } from '@/types';
-import { colors, commonStyles } from '@/styles/commonStyles';
+import { getColors } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useBanCheck } from '@/hooks/useBanCheck';
 
 interface PostCardProps {
@@ -17,6 +18,8 @@ interface PostCardProps {
 
 export default function PostCard({ post, onLike, onComment, onShare, onRepost }: PostCardProps) {
   const { user } = useAuth();
+  const { isDark } = useTheme();
+  const colors = getColors(isDark);
   const { hasCommentBan, getCommentBan, formatRemainingTime } = useBanCheck();
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
@@ -130,19 +133,19 @@ export default function PostCard({ post, onLike, onComment, onShare, onRepost }:
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.cardWhite, borderColor: colors.border }]}>
       <View style={styles.header}>
         <Image
           source={{ uri: post.userAvatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400' }}
-          style={styles.avatar}
+          style={[styles.avatar, { borderColor: colors.borderLight }]}
         />
         <View style={styles.headerInfo}>
-          <Text style={styles.userName}>{post.userName}</Text>
-          <Text style={styles.timestamp}>{formatTimestamp(post.timestamp)}</Text>
+          <Text style={[styles.userName, { color: colors.text }]}>{post.userName}</Text>
+          <Text style={[styles.timestamp, { color: colors.textSecondary }]}>{formatTimestamp(post.timestamp)}</Text>
         </View>
       </View>
 
-      <Text style={styles.content}>{post.content}</Text>
+      <Text style={[styles.content, { color: colors.text }]}>{post.content}</Text>
 
       {post.images && post.images.length > 0 && (
         <Image
@@ -152,10 +155,10 @@ export default function PostCard({ post, onLike, onComment, onShare, onRepost }:
         />
       )}
 
-      <View style={styles.stats}>
-        <Text style={styles.statsText}>{post.likes.length} Likes</Text>
-        <Text style={styles.statsText}>{post.comments.length} Kommentare</Text>
-        <Text style={styles.statsText}>{post.shares} Mal geteilt</Text>
+      <View style={[styles.stats, { borderTopColor: colors.border, borderBottomColor: colors.border }]}>
+        <Text style={[styles.statsText, { color: colors.textSecondary }]}>{post.likes.length} Likes</Text>
+        <Text style={[styles.statsText, { color: colors.textSecondary }]}>{post.comments.length} Kommentare</Text>
+        <Text style={[styles.statsText, { color: colors.textSecondary }]}>{post.shares} Mal geteilt</Text>
       </View>
 
       <View style={styles.actions}>
@@ -169,7 +172,7 @@ export default function PostCard({ post, onLike, onComment, onShare, onRepost }:
             size={22}
             color={isLiked ? colors.secondary : colors.textSecondary}
           />
-          <Text style={[styles.actionText, isLiked && { color: colors.secondary, fontWeight: '700' }]}>Like</Text>
+          <Text style={[styles.actionText, { color: isLiked ? colors.secondary : colors.textSecondary }, isLiked && { fontWeight: '700' }]}>Like</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -182,7 +185,7 @@ export default function PostCard({ post, onLike, onComment, onShare, onRepost }:
             size={22}
             color={showComments ? colors.primary : colors.textSecondary}
           />
-          <Text style={[styles.actionText, showComments && { color: colors.primary, fontWeight: '700' }]}>Kommentar</Text>
+          <Text style={[styles.actionText, { color: showComments ? colors.primary : colors.textSecondary }, showComments && { fontWeight: '700' }]}>Kommentar</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -195,28 +198,28 @@ export default function PostCard({ post, onLike, onComment, onShare, onRepost }:
             size={22}
             color={colors.textSecondary}
           />
-          <Text style={styles.actionText}>Teilen</Text>
+          <Text style={[styles.actionText, { color: colors.textSecondary }]}>Teilen</Text>
         </TouchableOpacity>
       </View>
 
       {showComments && (
-        <View style={styles.commentsSection}>
+        <View style={[styles.commentsSection, { borderTopColor: colors.border }]}>
           {post.comments.map((comment, index) => (
             <View key={index} style={styles.comment}>
               <Image
                 source={{ uri: comment.userAvatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400' }}
-                style={styles.commentAvatar}
+                style={[styles.commentAvatar, { borderColor: colors.borderLight }]}
               />
-              <View style={styles.commentContent}>
-                <Text style={styles.commentUserName}>{comment.userName}</Text>
-                <Text style={styles.commentText}>{comment.content}</Text>
+              <View style={[styles.commentContent, { backgroundColor: colors.card }]}>
+                <Text style={[styles.commentUserName, { color: colors.text }]}>{comment.userName}</Text>
+                <Text style={[styles.commentText, { color: colors.text }]}>{comment.content}</Text>
               </View>
             </View>
           ))}
 
           <View style={styles.commentInput}>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.card, color: colors.text, borderColor: colors.borderLight }]}
               placeholder="Schreibe einen Kommentar..."
               placeholderTextColor={colors.textSecondary}
               value={commentText}
@@ -239,7 +242,6 @@ export default function PostCard({ post, onLike, onComment, onShare, onRepost }:
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.white,
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
@@ -257,7 +259,6 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     marginRight: 12,
     borderWidth: 2,
-    borderColor: colors.borderLight,
   },
   headerInfo: {
     flex: 1,
@@ -265,16 +266,13 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 16,
     fontWeight: '700',
-    color: colors.text,
   },
   timestamp: {
     fontSize: 12,
-    color: colors.textSecondary,
     marginTop: 2,
   },
   content: {
     fontSize: 15,
-    color: colors.text,
     lineHeight: 22,
     marginBottom: 12,
   },
@@ -289,14 +287,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 10,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
     marginBottom: 8,
   },
   statsText: {
     fontSize: 13,
-    color: colors.textSecondary,
     fontWeight: '600',
   },
   actions: {
@@ -313,14 +308,12 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: 14,
-    color: colors.textSecondary,
     fontWeight: '600',
   },
   commentsSection: {
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
   },
   comment: {
     flexDirection: 'row',
@@ -332,23 +325,19 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginRight: 8,
     borderWidth: 1.5,
-    borderColor: colors.borderLight,
   },
   commentContent: {
     flex: 1,
-    backgroundColor: colors.card,
     borderRadius: 12,
     padding: 10,
   },
   commentUserName: {
     fontSize: 14,
     fontWeight: '700',
-    color: colors.text,
     marginBottom: 2,
   },
   commentText: {
     fontSize: 14,
-    color: colors.text,
     lineHeight: 20,
   },
   commentInput: {
@@ -359,13 +348,10 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: colors.card,
     borderRadius: 24,
     paddingVertical: 10,
     paddingHorizontal: 16,
     fontSize: 14,
-    color: colors.text,
     borderWidth: 1,
-    borderColor: colors.borderLight,
   },
 });

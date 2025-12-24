@@ -2,19 +2,22 @@
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet, Image, TouchableOpacity, Platform, Alert } from 'react-native';
 import { router } from 'expo-router';
-import { colors } from '@/styles/commonStyles';
+import { getColors } from '@/styles/commonStyles';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { IconSymbol } from '@/components/IconSymbol';
 import { useAdmin } from '@/hooks/useAdmin';
 
 export default function ProfileScreen() {
   const { user, logout, posts, trainings } = useAuth();
   const { isAdmin, adminLevel } = useAdmin();
+  const { isDark, themeMode, setThemeMode } = useTheme();
+  const colors = getColors(isDark);
 
   if (!user) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>Bitte melden Sie sich an</Text>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <Text style={[styles.errorText, { color: colors.error }]}>Bitte melden Sie sich an</Text>
       </View>
     );
   }
@@ -55,9 +58,47 @@ export default function ProfileScreen() {
     );
   };
 
+  const handleThemeChange = () => {
+    Alert.alert(
+      'Design wählen',
+      'Wähle dein bevorzugtes App-Design',
+      [
+        {
+          text: 'Hell',
+          onPress: () => setThemeMode('light'),
+        },
+        {
+          text: 'Dunkel',
+          onPress: () => setThemeMode('dark'),
+        },
+        {
+          text: 'System',
+          onPress: () => setThemeMode('system'),
+        },
+        {
+          text: 'Abbrechen',
+          style: 'cancel',
+        },
+      ]
+    );
+  };
+
+  const getThemeModeLabel = () => {
+    switch (themeMode) {
+      case 'light':
+        return 'Hell';
+      case 'dark':
+        return 'Dunkel';
+      case 'system':
+        return 'System';
+      default:
+        return 'System';
+    }
+  };
+
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.primary }]}>
         <Image
           source={require('@/assets/images/a782a098-0dea-4c85-9045-a026ad2ee036.png')}
           style={styles.logo}
@@ -77,7 +118,7 @@ export default function ProfileScreen() {
           />
         )}
 
-        <View style={styles.profileCard}>
+        <View style={[styles.profileCard, { backgroundColor: colors.cardWhite, borderColor: colors.border }]}>
           {user.avatar ? (
             <Image
               source={{ uri: user.avatar }}
@@ -93,12 +134,12 @@ export default function ProfileScreen() {
               />
             </View>
           )}
-          <Text style={styles.name}>{user.name}</Text>
-          <View style={styles.roleBadge}>
-            <Text style={styles.roleText}>{getRoleLabel(user.role)}</Text>
+          <Text style={[styles.name, { color: colors.text }]}>{user.name}</Text>
+          <View style={[styles.roleBadge, { backgroundColor: colors.primary }]}>
+            <Text style={[styles.roleText, { color: colors.white }]}>{getRoleLabel(user.role)}</Text>
           </View>
           {user.bio && (
-            <Text style={styles.bio}>{user.bio}</Text>
+            <Text style={[styles.bio, { color: colors.textSecondary }]}>{user.bio}</Text>
           )}
           {user.location && (
             <View style={styles.locationRow}>
@@ -108,29 +149,29 @@ export default function ProfileScreen() {
                 size={16}
                 color={colors.textSecondary}
               />
-              <Text style={styles.location}>{user.location}</Text>
+              <Text style={[styles.location, { color: colors.textSecondary }]}>{user.location}</Text>
             </View>
           )}
 
-          <View style={styles.stats}>
+          <View style={[styles.stats, { borderTopColor: colors.border, borderBottomColor: colors.border }]}>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>{user.friends.length}</Text>
-              <Text style={styles.statLabel}>Freunde</Text>
+              <Text style={[styles.statValue, { color: colors.text }]}>{user.friends.length}</Text>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Freunde</Text>
             </View>
-            <View style={styles.statDivider} />
+            <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>{userPosts.length}</Text>
-              <Text style={styles.statLabel}>Beiträge</Text>
+              <Text style={[styles.statValue, { color: colors.text }]}>{userPosts.length}</Text>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Beiträge</Text>
             </View>
-            <View style={styles.statDivider} />
+            <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>{userTrainings.length}</Text>
-              <Text style={styles.statLabel}>Trainings</Text>
+              <Text style={[styles.statValue, { color: colors.text }]}>{userTrainings.length}</Text>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Trainings</Text>
             </View>
           </View>
 
           <TouchableOpacity
-            style={styles.editButton}
+            style={[styles.editButton, { backgroundColor: colors.primary }]}
             onPress={() => router.push('/(auth)/edit-profile')}
           >
             <IconSymbol
@@ -139,16 +180,16 @@ export default function ProfileScreen() {
               size={20}
               color={colors.white}
             />
-            <Text style={styles.editButtonText}>Profil bearbeiten</Text>
+            <Text style={[styles.editButtonText, { color: colors.white }]}>Profil bearbeiten</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Einstellungen</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Einstellungen</Text>
           
           {isAdmin && (
             <TouchableOpacity
-              style={[styles.menuItem, styles.adminItem]}
+              style={[styles.menuItem, styles.adminItem, { backgroundColor: `${colors.primary}10`, borderColor: colors.primary }]}
               onPress={() => router.push('/(admin)')}
             >
               <IconSymbol
@@ -158,9 +199,9 @@ export default function ProfileScreen() {
                 color={colors.primary}
               />
               <View style={styles.adminTextContainer}>
-                <Text style={[styles.menuItemText, styles.adminText]}>Admin-Bereich</Text>
+                <Text style={[styles.menuItemText, styles.adminText, { color: colors.primary }]}>Admin-Bereich</Text>
                 {adminLevel && (
-                  <Text style={styles.adminLevelText}>{adminLevel}</Text>
+                  <Text style={[styles.adminLevelText, { color: colors.primary }]}>{adminLevel}</Text>
                 )}
               </View>
               <IconSymbol
@@ -172,14 +213,34 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           )}
           
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity 
+            style={[styles.menuItem, { backgroundColor: colors.cardWhite, borderColor: colors.border }]}
+            onPress={handleThemeChange}
+          >
+            <IconSymbol
+              ios_icon_name={isDark ? "moon.fill" : "sun.max.fill"}
+              android_material_icon_name={isDark ? "dark_mode" : "light_mode"}
+              size={24}
+              color={colors.text}
+            />
+            <Text style={[styles.menuItemText, { color: colors.text }]}>Design</Text>
+            <Text style={[styles.themeValue, { color: colors.textSecondary }]}>{getThemeModeLabel()}</Text>
+            <IconSymbol
+              ios_icon_name="chevron.right"
+              android_material_icon_name="chevron_right"
+              size={24}
+              color={colors.textSecondary}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={[styles.menuItem, { backgroundColor: colors.cardWhite, borderColor: colors.border }]}>
             <IconSymbol
               ios_icon_name="bell"
               android_material_icon_name="notifications"
               size={24}
               color={colors.text}
             />
-            <Text style={styles.menuItemText}>Benachrichtigungen</Text>
+            <Text style={[styles.menuItemText, { color: colors.text }]}>Benachrichtigungen</Text>
             <IconSymbol
               ios_icon_name="chevron.right"
               android_material_icon_name="chevron_right"
@@ -187,14 +248,14 @@ export default function ProfileScreen() {
               color={colors.textSecondary}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity style={[styles.menuItem, { backgroundColor: colors.cardWhite, borderColor: colors.border }]}>
             <IconSymbol
               ios_icon_name="lock"
               android_material_icon_name="lock"
               size={24}
               color={colors.text}
             />
-            <Text style={styles.menuItemText}>Datenschutz</Text>
+            <Text style={[styles.menuItemText, { color: colors.text }]}>Datenschutz</Text>
             <IconSymbol
               ios_icon_name="chevron.right"
               android_material_icon_name="chevron_right"
@@ -202,14 +263,14 @@ export default function ProfileScreen() {
               color={colors.textSecondary}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity style={[styles.menuItem, { backgroundColor: colors.cardWhite, borderColor: colors.border }]}>
             <IconSymbol
               ios_icon_name="questionmark.circle"
               android_material_icon_name="help"
               size={24}
               color={colors.text}
             />
-            <Text style={styles.menuItemText}>Hilfe & Support</Text>
+            <Text style={[styles.menuItemText, { color: colors.text }]}>Hilfe & Support</Text>
             <IconSymbol
               ios_icon_name="chevron.right"
               android_material_icon_name="chevron_right"
@@ -218,7 +279,7 @@ export default function ProfileScreen() {
             />
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.menuItem, styles.logoutItem]}
+            style={[styles.menuItem, styles.logoutItem, { backgroundColor: colors.cardWhite, borderColor: colors.border }]}
             onPress={handleLogout}
           >
             <IconSymbol
@@ -227,7 +288,7 @@ export default function ProfileScreen() {
               size={24}
               color={colors.error}
             />
-            <Text style={[styles.menuItemText, styles.logoutText]}>Abmelden</Text>
+            <Text style={[styles.menuItemText, styles.logoutText, { color: colors.error }]}>Abmelden</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -238,10 +299,8 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   header: {
-    backgroundColor: colors.primary,
     paddingTop: Platform.OS === 'android' ? 48 : 60,
     paddingBottom: 16,
     paddingHorizontal: 16,
@@ -262,7 +321,6 @@ const styles = StyleSheet.create({
     height: 200,
   },
   profileCard: {
-    backgroundColor: colors.white,
     borderRadius: 12,
     padding: 24,
     alignItems: 'center',
@@ -284,24 +342,20 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 24,
     fontWeight: '700',
-    color: colors.text,
     marginBottom: 8,
   },
   roleBadge: {
-    backgroundColor: colors.primary,
     paddingVertical: 4,
     paddingHorizontal: 12,
     borderRadius: 12,
     marginBottom: 12,
   },
   roleText: {
-    color: colors.white,
     fontSize: 13,
     fontWeight: '600',
   },
   bio: {
     fontSize: 15,
-    color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: 8,
   },
@@ -313,7 +367,6 @@ const styles = StyleSheet.create({
   },
   location: {
     fontSize: 14,
-    color: colors.textSecondary,
   },
   stats: {
     flexDirection: 'row',
@@ -322,7 +375,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: colors.border,
     marginBottom: 16,
   },
   statItem: {
@@ -331,19 +383,15 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 20,
     fontWeight: '700',
-    color: colors.text,
   },
   statLabel: {
     fontSize: 13,
-    color: colors.textSecondary,
     marginTop: 4,
   },
   statDivider: {
     width: 1,
-    backgroundColor: colors.border,
   },
   editButton: {
-    backgroundColor: colors.primary,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
@@ -352,7 +400,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   editButtonText: {
-    color: colors.white,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -363,11 +410,9 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: colors.text,
     marginBottom: 12,
   },
   menuItem: {
-    backgroundColor: colors.white,
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row',
@@ -380,35 +425,32 @@ const styles = StyleSheet.create({
   menuItemText: {
     flex: 1,
     fontSize: 16,
-    color: colors.text,
+  },
+  themeValue: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   logoutItem: {
     marginTop: 8,
   },
   logoutText: {
-    color: colors.error,
   },
   errorText: {
     fontSize: 16,
-    color: colors.error,
     textAlign: 'center',
     marginTop: 40,
   },
   adminItem: {
     borderWidth: 2,
-    borderColor: colors.primary,
-    backgroundColor: `${colors.primary}10`,
   },
   adminTextContainer: {
     flex: 1,
   },
   adminText: {
-    color: colors.primary,
     fontWeight: '600',
   },
   adminLevelText: {
     fontSize: 12,
-    color: colors.primary,
     marginTop: 2,
   },
 });
