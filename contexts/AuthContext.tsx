@@ -193,7 +193,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (error.message.includes('Email not confirmed')) {
           return { 
             success: false, 
-            error: 'E-Mail nicht bestätigt.\n\nBitte kontaktiere den Administrator unter:\ntomsc.rp@gmail.com\n\nDer Administrator muss die E-Mail-Bestätigung in den Supabase-Einstellungen deaktivieren.' 
+            error: 'E-Mail nicht bestätigt.\n\nBitte überprüfe dein E-Mail-Postfach und bestätige deine E-Mail-Adresse.\n\nFalls du keine E-Mail erhalten hast, kontaktiere bitte den Support unter:\ntomsc.rp@gmail.com' 
           };
         }
         
@@ -225,7 +225,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log('Attempting registration for:', email);
       
-      // Try Supabase registration
+      // Try Supabase registration without email redirect (since confirmation is disabled)
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -234,7 +234,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             name,
             role,
           },
-          emailRedirectTo: 'https://natively.dev/email-confirmed',
         },
       });
 
@@ -248,22 +247,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             success: false, 
             error: 'Diese E-Mail-Adresse ist bereits registriert.\n\nBitte melde dich an oder verwende eine andere E-Mail-Adresse.' 
           };
-        }
-        
-        // If it's an email sending error, we still want to proceed
-        if (error.message.includes('Error sending confirmation email')) {
-          console.log('Email sending failed, but user may have been created');
-          
-          // Show a helpful message to the user
-          Alert.alert(
-            'Hinweis zur Registrierung',
-            '✅ Dein Account wurde erfolgreich erstellt!\n\n' +
-            '⚠️ E-Mail-Bestätigung ist derzeit deaktiviert.\n\n' +
-            'Du kannst dich jetzt direkt anmelden!',
-            [{ text: 'OK' }]
-          );
-          
-          return { success: true };
         }
         
         // For other errors, return them
@@ -309,8 +292,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             'Bitte überprüfe deine E-Mail und bestätige deine Adresse, um dich anzumelden.\n\n' +
             '⚠️ Falls du keine E-Mail erhältst:\n' +
             '• Überprüfe deinen Spam-Ordner\n' +
-            '• Kontaktiere den Support: tomsc.rp@gmail.com\n\n' +
-            'Hinweis: Die E-Mail-Bestätigung muss vom Administrator konfiguriert werden.',
+            '• Kontaktiere den Support: tomsc.rp@gmail.com',
             [{ text: 'Verstanden' }]
           );
         }
