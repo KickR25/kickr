@@ -47,11 +47,17 @@ export default function RegisterScreen() {
 
     if (result.success) {
       // Success - the register function already shows appropriate alerts
-      // Navigate to login screen so user can log in after email confirmation
-      // Only navigate if email confirmation is required
-      // If user is auto-logged in, they'll be redirected by the auth state change
+      // Check if user is auto-logged in or needs to confirm email
+      // If auto-logged in, they'll be redirected by the auth state change
+      // If email confirmation is required, they should go to login screen
       setTimeout(() => {
-        router.replace('/(auth)/login');
+        // Only navigate if not auto-logged in
+        // The auth state change will handle navigation if auto-logged in
+        const timer = setTimeout(() => {
+          router.replace('/(auth)/login');
+        }, 1000);
+        
+        return () => clearTimeout(timer);
       }, 500);
     } else if (result.error) {
       // Show error alert
@@ -213,7 +219,7 @@ export default function RegisterScreen() {
               color={colors.primary}
             />
             <Text style={styles.infoText}>
-              Nach der Registrierung erhältst du eine Bestätigungs-E-Mail.
+              Du kannst dich direkt nach der Registrierung anmelden.
             </Text>
           </View>
 

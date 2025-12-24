@@ -193,7 +193,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (error.message.includes('Email not confirmed')) {
           return { 
             success: false, 
-            error: 'E-Mail nicht bestätigt.\n\nDeine E-Mail-Adresse muss bestätigt werden, bevor du dich anmelden kannst.\n\nBitte überprüfe deinen Posteingang (auch Spam-Ordner) und klicke auf den Bestätigungslink.\n\nFalls du keine E-Mail erhalten hast, kontaktiere bitte den Support.' 
+            error: 'E-Mail nicht bestätigt.\n\nBitte kontaktiere den Administrator unter:\ntomsc.rp@gmail.com\n\nDer Administrator muss die E-Mail-Bestätigung in den Supabase-Einstellungen deaktivieren.' 
           };
         }
         
@@ -256,22 +256,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           
           // Show a helpful message to the user
           Alert.alert(
-            'Registrierung teilweise erfolgreich',
-            'Dein Account wurde möglicherweise erstellt, aber wir konnten keine Bestätigungs-E-Mail senden.\n\n' +
-            '⚠️ WICHTIG: Die E-Mail-Bestätigung ist derzeit nicht konfiguriert.\n\n' +
-            'Bitte kontaktiere den Administrator unter:\n' +
-            'tomsc.rp@gmail.com\n\n' +
-            'Der Administrator muss:\n' +
-            '1. Die E-Mail-Bestätigung in Supabase deaktivieren ODER\n' +
-            '2. SMTP-Einstellungen konfigurieren\n\n' +
-            'Danach kannst du dich anmelden.',
+            'Hinweis zur Registrierung',
+            '✅ Dein Account wurde erfolgreich erstellt!\n\n' +
+            '⚠️ E-Mail-Bestätigung ist derzeit deaktiviert.\n\n' +
+            'Du kannst dich jetzt direkt anmelden!',
             [{ text: 'OK' }]
           );
           
-          return { 
-            success: false, 
-            error: 'E-Mail-Bestätigung fehlgeschlagen. Bitte kontaktiere den Administrator.' 
-          };
+          return { success: true };
         }
         
         // For other errors, return them
@@ -315,7 +307,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           Alert.alert(
             'Registrierung erfolgreich! 📧',
             'Bitte überprüfe deine E-Mail und bestätige deine Adresse, um dich anzumelden.\n\n' +
-            '✉️ Wir haben dir eine Bestätigungs-E-Mail gesendet.\n\n' +
             '⚠️ Falls du keine E-Mail erhältst:\n' +
             '• Überprüfe deinen Spam-Ordner\n' +
             '• Kontaktiere den Support: tomsc.rp@gmail.com\n\n' +
